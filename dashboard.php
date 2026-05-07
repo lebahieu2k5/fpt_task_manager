@@ -2,13 +2,14 @@
 require_once __DIR__ . '/bootstrap.php';
 require_login();
 
-$pageTitle = 'Dashboard tien do';
+$pageTitle = 'Dashboard tiến độ';
 $activePage = 'dashboard';
 
 $stats = fetch_dashboard_stats();
 $boards = fetch_boards_for_current_user();
 $upcomingTasks = fetch_upcoming_tasks(6);
 $overdueTasks = fetch_overdue_tasks(6);
+$notifications = fetch_notifications(3);
 $completionRate = 0;
 
 if (!empty($stats['task_count'])) {
@@ -17,26 +18,13 @@ if (!empty($stats['task_count'])) {
 
 require_once __DIR__ . '/partials/header.php';
 ?>
-<section class="hero-summary">
-    <div>
-        <span class="hero-badge">Tong quan he thong</span>
-        <h2>Theo doi cong viec cua team trong mot man hinh</h2>
-        <p class="text-secondary mb-0">
-            Giao dien nay duoc rut gon tu Use Case: tao bang, giao viec, theo doi tien do va nhin nhanh task tre han.
-        </p>
-    </div>
-    <div class="hero-metric">
-        <small>Ti le hoan thanh</small>
-        <strong><?php echo e($completionRate); ?>%</strong>
-    </div>
-</section>
 
 <div class="row g-4 mb-4">
     <div class="col-md-6 col-xl-3">
         <div class="stat-card">
             <span class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-kanban"></i></span>
             <div>
-                <small>Tong so bang</small>
+                <small>Tổng số bảng</small>
                 <h3><?php echo e((int) $stats['board_count']); ?></h3>
             </div>
         </div>
@@ -45,7 +33,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="stat-card">
             <span class="stat-icon bg-warning-subtle text-warning-emphasis"><i class="bi bi-list-check"></i></span>
             <div>
-                <small>Tong task</small>
+                <small>Tổng task</small>
                 <h3><?php echo e((int) $stats['task_count']); ?></h3>
             </div>
         </div>
@@ -54,7 +42,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="stat-card">
             <span class="stat-icon bg-success-subtle text-success"><i class="bi bi-check-circle"></i></span>
             <div>
-                <small>Da hoan thanh</small>
+                <small>Đã hoàn thành</small>
                 <h3><?php echo e((int) $stats['done_count']); ?></h3>
             </div>
         </div>
@@ -63,8 +51,17 @@ require_once __DIR__ . '/partials/header.php';
         <div class="stat-card">
             <span class="stat-icon bg-danger-subtle text-danger"><i class="bi bi-alarm"></i></span>
             <div>
-                <small>Tre han</small>
+                <small>Trễ hạn</small>
                 <h3><?php echo e((int) $stats['overdue_count']); ?></h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <span class="stat-icon bg-info-subtle text-info"><i class="bi bi-graph-up-arrow"></i></span>
+            <div>
+                <small>Tỉ lệ hoàn thành</small>
+                <h3><?php echo e($completionRate); ?>%</h3>
             </div>
         </div>
     </div>
@@ -75,10 +72,9 @@ require_once __DIR__ . '/partials/header.php';
         <div class="content-card h-100">
             <div class="section-header">
                 <div>
-                    <h3 class="section-title">Bang cong viec noi bat</h3>
-                    <p class="section-subtitle">Nhanh chong vao cac board dang duoc theo doi.</p>
+                    <h3 class="section-title">Bảng công việc nổi bật</h3>
                 </div>
-                <a class="btn btn-outline-secondary btn-sm" href="boards.php">Xem tat ca</a>
+                <a class="btn btn-outline-secondary btn-sm" href="boards.php">Xem tất cả</a>
             </div>
 
             <div class="row g-3">
@@ -99,7 +95,7 @@ require_once __DIR__ . '/partials/header.php';
                                 <span class="badge text-bg-light"><?php echo e($progress); ?>%</span>
                             </div>
                             <div class="board-meta">
-                                <span><i class="bi bi-people"></i> <?php echo e((int) $board['member_count']); ?> thanh vien</span>
+                                <span><i class="bi bi-people"></i> <?php echo e((int) $board['member_count']); ?> thành viên</span>
                                 <span><i class="bi bi-list-task"></i> <?php echo e((int) $board['task_count']); ?> task</span>
                             </div>
                         </a>
@@ -109,7 +105,7 @@ require_once __DIR__ . '/partials/header.php';
                 <?php if (empty($boards)) { ?>
                     <div class="col-12">
                         <div class="empty-box">
-                            Chua co board nao. Hay vao muc <strong>Bang cong viec</strong> de tao board dau tien.
+                            Chưa có board nào. Hãy vào mục <strong>Bảng công việc</strong> để tạo board đầu tiên.
                         </div>
                     </div>
                 <?php } ?>
@@ -121,8 +117,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="content-card h-100">
             <div class="section-header">
                 <div>
-                    <h3 class="section-title">Task den han som</h3>
-                    <p class="section-subtitle">Dung de theo doi tien do va nhac viec.</p>
+                    <h3 class="section-title">Task đến hạn sớm</h3>
                 </div>
             </div>
 
@@ -131,7 +126,7 @@ require_once __DIR__ . '/partials/header.php';
                     <div class="deadline-item">
                         <div>
                             <strong><?php echo e($task['title']); ?></strong>
-                            <p class="mb-1"><?php echo e($task['board_name']); ?> - <?php echo e($task['assignee_name'] ?: 'Chua giao'); ?></p>
+                            <p class="mb-1"><?php echo e($task['board_name']); ?> - <?php echo e($task['assignee_name'] ?: 'Chưa giao'); ?></p>
                             <small class="text-secondary">Deadline: <?php echo e(format_date_vn($task['deadline'])); ?></small>
                         </div>
                         <span class="badge <?php echo e(priority_badge_class($task['priority'])); ?>">
@@ -141,10 +136,40 @@ require_once __DIR__ . '/partials/header.php';
                 <?php } ?>
 
                 <?php if (empty($upcomingTasks)) { ?>
-                    <div class="empty-box">Khong co task sap den han.</div>
+                    <div class="empty-box">Không có task sắp đến hạn.</div>
                 <?php } ?>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="content-card mt-4">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Thông báo mới</h3>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="notifications.php">Xem tất cả</a>
+    </div>
+
+    <div class="vstack gap-3">
+        <?php foreach ($notifications as $notification) { ?>
+            <div class="notice-item">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <strong><?php echo e($notification['title']); ?></strong>
+                        <span class="badge <?php echo e(priority_badge_class($notification['priority'])); ?>">
+                            <?php echo e($notification['priority']); ?>
+                        </span>
+                    </div>
+                    <p><?php echo nl2br(e($notification['content'])); ?></p>
+                    <small class="text-secondary"><?php echo e(format_datetime_vn($notification['created_at'])); ?></small>
+                </div>
+            </div>
+        <?php } ?>
+
+        <?php if (empty($notifications)) { ?>
+            <div class="empty-box">Chưa có thông báo nào.</div>
+        <?php } ?>
     </div>
 </div>
 
@@ -153,8 +178,7 @@ require_once __DIR__ . '/partials/header.php';
         <div class="content-card">
             <div class="section-header">
                 <div>
-                    <h3 class="section-title">Danh sach task tre han</h3>
-                    <p class="section-subtitle">Phan nay phu hop voi use case giam sat va phat hien tre han.</p>
+                    <h3 class="section-title">Danh sách task trễ hạn</h3>
                 </div>
             </div>
 
@@ -164,9 +188,9 @@ require_once __DIR__ . '/partials/header.php';
                         <tr>
                             <th>Task</th>
                             <th>Board</th>
-                            <th>Nguoi thuc hien</th>
+                            <th>Người thực hiện</th>
                             <th>Deadline</th>
-                            <th>Tien do</th>
+                            <th>Tiến độ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -177,7 +201,7 @@ require_once __DIR__ . '/partials/header.php';
                                     <div class="text-secondary small"><?php echo e($task['priority']); ?></div>
                                 </td>
                                 <td><?php echo e($task['board_name']); ?></td>
-                                <td><?php echo e($task['assignee_name'] ?: 'Chua giao'); ?></td>
+                                <td><?php echo e($task['assignee_name'] ?: 'Chưa giao'); ?></td>
                                 <td class="text-danger fw-semibold"><?php echo e(format_date_vn($task['deadline'])); ?></td>
                                 <td style="min-width: 180px;">
                                     <div class="progress" role="progressbar" aria-valuenow="<?php echo (int) $task['progress_percent']; ?>" aria-valuemin="0" aria-valuemax="100">
@@ -191,7 +215,7 @@ require_once __DIR__ . '/partials/header.php';
 
                         <?php if (empty($overdueTasks)) { ?>
                             <tr>
-                                <td colspan="5" class="text-center text-secondary py-4">Khong co task nao dang tre han.</td>
+                                <td colspan="5" class="text-center text-secondary py-4">Không có task nào đang trễ hạn.</td>
                             </tr>
                         <?php } ?>
                     </tbody>

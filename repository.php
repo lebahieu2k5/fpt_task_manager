@@ -25,14 +25,312 @@ function fetch_all_users()
     global $pdo;
 
     $statement = $pdo->query(
+        "SELECT id, full_name, email, username, role, department, created_at
+        FROM users
+        ORDER BY
+            CASE role
+                WHEN 'admin' THEN 0
+                WHEN 'manager' THEN 1
+                ELSE 2
+            END,
+            full_name ASC"
+    );
+
+    return $statement->fetchAll();
+}
+
+function fetch_assignable_users()
+{
+    global $pdo;
+
+    $statement = $pdo->query(
         "SELECT id, full_name, username, role, department
         FROM users
+        WHERE role IN ('manager', 'member')
         ORDER BY
             CASE role
                 WHEN 'manager' THEN 0
                 ELSE 1
             END,
             full_name ASC"
+    );
+
+    return $statement->fetchAll();
+}
+
+function username_exists($username, $ignoreUserId = 0)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'SELECT COUNT(*)
+        FROM users
+        WHERE username = :username AND id <> :ignore_user_id'
+    );
+    $statement->execute(
+        array(
+            'username' => $username,
+            'ignore_user_id' => (int) $ignoreUserId,
+        )
+    );
+
+    return (int) $statement->fetchColumn() > 0;
+}
+
+function update_user_profile($userId, $fullName, $email, $department, $password)
+{
+    global $pdo;
+
+    $params = array(
+        'full_name' => $fullName,
+        'email' => $email,
+        'department' => $department,
+        'id' => (int) $userId,
+    );
+
+    $sql = 'UPDATE users
+        SET full_name = :full_name,
+            email = :email,
+            department = :department';
+
+    if ($password !== '') {
+        $sql .= ', password_hash = :password_hash';
+        $params['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    $sql .= ' WHERE id = :id';
+
+    $statement = $pdo->prepare($sql);
+    $statement->execute($params);
+}
+
+function save_user_by_admin($userId, $fullName, $email, $username, $role, $department, $password)
+{
+    global $pdo;
+
+    $params = array(
+        'full_name' => $fullName,
+        'email' => $email,
+        'username' => $username,
+        'role' => $role,
+        'department' => $department,
+    );
+
+    if ($userId > 0) {
+        $params['id'] = (int) $userId;
+        $sql = 'UPDATE users
+            SET full_name = :full_name,
+                email = :email,
+                username = :username,
+                role = :role,
+                department = :department';
+
+        if ($password !== '') {
+            $sql .= ', password_hash = :password_hash';
+            $params['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        $sql .= ' WHERE id = :id';
+
+        $statement = $pdo->prepare($sql);
+        $statement->execute($params);
+        return;
+    }
+
+    $params['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+    $statement = $pdo->prepare(
+        'INSERT INTO users (full_name, email, username, password_hash, role, department)
+        VALUES (:full_name, :email, :username, :password_hash, :role, :department)'
+    );
+    $statement->execute($params);
+}
+
+function fetch_notifications($limit = 0)
+{
+    global $pdo;
+
+    $limit = (int) $limit;
+    $sql = "
+        SELECT n.*, u.full_name AS creator_name
+        FROM notifications n
+        INNER JOIN users u ON u.id = n.created_by
+        ORDER BY n.created_at DESC, n.id DESC
+    ";
+
+    if ($limit > 0) {
+        $sql .= ' LIMIT ' . $limit;
+    }
+
+    $statement = $pdo->query($sql);
+
+    return $statement->fetchAll();
+}
+
+function fetch_notification_by_id($notificationId)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare('SELECT * FROM notifications WHERE id = :id LIMIT 1');
+    $statement->execute(array('id' => (int) $notificationId));
+
+    return $statement->fetch();
+}
+
+function fetch_task_status_report()
+{
+    global $pdo;
+
+    if (is_admin() || is_manager()) {
+        $statement = $pdo->query(
+            "
+            SELECT s.status_name, s.status_key, COUNT(t.id) AS task_count
+            FROM task_statuses s
+            LEFT JOIN tasks t ON t.status_id = s.id
+            GROUP BY s.id, s.status_name, s.status_key, s.display_order
+            ORDER BY s.display_order ASC
+            "
+        );
+
+        return $statement->fetchAll();
+    }
+
+    $statement = $pdo->prepare(
+        "
+        SELECT
+            s.status_name,
+            s.status_key,
+            COUNT(
+                CASE
+                    WHEN b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL THEN t.id
+                END
+            ) AS task_count
+        FROM task_statuses s
+        LEFT JOIN tasks t ON t.status_id = s.id
+        LEFT JOIN boards b ON b.id = t.board_id
+        LEFT JOIN board_members access_member
+            ON access_member.board_id = b.id
+            AND access_member.user_id = :member_user_id
+        GROUP BY s.id, s.status_name, s.status_key, s.display_order
+        ORDER BY s.display_order ASC
+        "
+    );
+    $statement->execute(
+        array(
+            'member_user_id' => current_user_id(),
+            'owner_user_id' => current_user_id(),
+        )
+    );
+
+    return $statement->fetchAll();
+}
+
+function fetch_assignee_report()
+{
+    global $pdo;
+
+    if (is_admin() || is_manager()) {
+        $statement = $pdo->query(
+            "
+            SELECT
+                COALESCE(u.full_name, 'Chưa giao') AS assignee_name,
+                COUNT(t.id) AS task_count,
+                SUM(CASE WHEN s.status_key = 'done' THEN 1 ELSE 0 END) AS done_count,
+                SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count,
+                ROUND(AVG(t.progress_percent)) AS avg_progress
+            FROM tasks t
+            INNER JOIN task_statuses s ON s.id = t.status_id
+            LEFT JOIN users u ON u.id = t.assignee_id
+            GROUP BY t.assignee_id, u.full_name
+            ORDER BY task_count DESC, assignee_name ASC
+            "
+        );
+
+        return $statement->fetchAll();
+    }
+
+    $statement = $pdo->prepare(
+        "
+        SELECT
+            COALESCE(u.full_name, 'Chưa giao') AS assignee_name,
+            COUNT(t.id) AS task_count,
+            SUM(CASE WHEN s.status_key = 'done' THEN 1 ELSE 0 END) AS done_count,
+            SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count,
+            ROUND(AVG(t.progress_percent)) AS avg_progress
+        FROM tasks t
+        INNER JOIN task_statuses s ON s.id = t.status_id
+        INNER JOIN boards b ON b.id = t.board_id
+        LEFT JOIN board_members access_member
+            ON access_member.board_id = b.id
+            AND access_member.user_id = :member_user_id
+        LEFT JOIN users u ON u.id = t.assignee_id
+        WHERE b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL
+        GROUP BY t.assignee_id, u.full_name
+        ORDER BY task_count DESC, assignee_name ASC
+        "
+    );
+    $statement->execute(
+        array(
+            'member_user_id' => current_user_id(),
+            'owner_user_id' => current_user_id(),
+        )
+    );
+
+    return $statement->fetchAll();
+}
+
+function fetch_calendar_tasks($limit)
+{
+    global $pdo;
+
+    $limit = (int) $limit;
+
+    if (is_admin() || is_manager()) {
+        $sql = "
+            SELECT
+                t.*,
+                s.status_key,
+                b.name AS board_name,
+                u.full_name AS assignee_name
+            FROM tasks t
+            INNER JOIN task_statuses s ON s.id = t.status_id
+            INNER JOIN boards b ON b.id = t.board_id
+            LEFT JOIN users u ON u.id = t.assignee_id
+            WHERE t.deadline IS NOT NULL AND s.status_key <> 'done'
+            ORDER BY t.deadline ASC, t.progress_percent DESC
+            LIMIT {$limit}
+        ";
+        $statement = $pdo->query($sql);
+
+        return $statement->fetchAll();
+    }
+
+    $sql = "
+        SELECT
+            t.*,
+            s.status_key,
+            b.name AS board_name,
+            u.full_name AS assignee_name
+        FROM tasks t
+        INNER JOIN task_statuses s ON s.id = t.status_id
+        INNER JOIN boards b ON b.id = t.board_id
+        LEFT JOIN board_members access_member
+            ON access_member.board_id = b.id
+            AND access_member.user_id = :member_user_id
+        LEFT JOIN users u ON u.id = t.assignee_id
+        WHERE
+            t.deadline IS NOT NULL
+            AND s.status_key <> 'done'
+            AND (b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL)
+        ORDER BY t.deadline ASC, t.progress_percent DESC
+        LIMIT {$limit}
+    ";
+
+    $statement = $pdo->prepare($sql);
+    $statement->execute(
+        array(
+            'member_user_id' => current_user_id(),
+            'owner_user_id' => current_user_id(),
+        )
     );
 
     return $statement->fetchAll();
@@ -77,7 +375,7 @@ function fetch_boards_for_current_user()
         LEFT JOIN task_statuses s ON s.id = t.status_id
     ";
 
-    if (current_user_role() === 'manager') {
+    if (is_admin() || is_manager()) {
         $sql = $baseSql . '
             GROUP BY b.id
             ORDER BY b.created_at DESC
@@ -122,7 +420,7 @@ function fetch_board_by_id($boardId)
         LEFT JOIN tasks t ON t.board_id = b.id
     ";
 
-    if (current_user_role() === 'manager') {
+    if (is_admin() || is_manager()) {
         $sql = $baseSql . '
             WHERE b.id = :board_id
             GROUP BY b.id
@@ -275,7 +573,7 @@ function fetch_dashboard_stats()
 {
     global $pdo;
 
-    if (current_user_role() === 'manager') {
+    if (is_admin() || is_manager()) {
         $sql = "
             SELECT
                 COUNT(DISTINCT b.id) AS board_count,
@@ -322,7 +620,7 @@ function fetch_upcoming_tasks($limit)
 
     $limit = (int) $limit;
 
-    if (current_user_role() === 'manager') {
+    if (is_admin() || is_manager()) {
         $sql = "
             SELECT
                 t.*,
@@ -379,7 +677,7 @@ function fetch_overdue_tasks($limit)
 
     $limit = (int) $limit;
 
-    if (current_user_role() === 'manager') {
+    if (is_admin() || is_manager()) {
         $sql = "
             SELECT
                 t.*,

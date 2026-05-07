@@ -14,7 +14,7 @@ $endDate = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
 $memberIds = isset($_POST['member_ids']) ? $_POST['member_ids'] : array();
 
 if ($name === '') {
-    set_flash('danger', 'Ten board khong duoc de trong.');
+    set_flash('danger', 'Tên board không được để trống.');
     redirect('../boards.php');
 }
 
@@ -28,7 +28,7 @@ try {
         $board = fetch_board_by_id($boardId);
 
         if (!$board) {
-            throw new Exception('Khong tim thay board can cap nhat.');
+            throw new Exception('Không tìm thấy board cần cập nhật.');
         }
 
         $statement = $pdo->prepare(
@@ -50,7 +50,7 @@ try {
         $deleteStatement->execute(array('board_id' => $boardId));
 
         $savedBoardId = $boardId;
-        $flashMessage = 'Cap nhat board thanh cong.';
+        $flashMessage = 'Cập nhật board thành công.';
     } else {
         $statement = $pdo->prepare(
             'INSERT INTO boards (name, description, owner_id, start_date, end_date)
@@ -67,7 +67,7 @@ try {
         );
 
         $savedBoardId = (int) $pdo->lastInsertId();
-        $flashMessage = 'Tao board moi thanh cong.';
+        $flashMessage = 'Tạo board mới thành công.';
     }
 
     $insertMemberStatement = $pdo->prepare(
@@ -94,7 +94,7 @@ try {
         $pdo->rollBack();
     }
 
-    set_flash('danger', 'Khong the luu board: ' . $exception->getMessage());
+    set_flash('danger', 'Không thể lưu board: ' . $exception->getMessage());
 }
 
 redirect('../boards.php');

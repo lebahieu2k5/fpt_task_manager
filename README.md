@@ -1,82 +1,98 @@
 # FPT Task Manager
 
-Day la bai tap lon web duoc dung theo huong don gian, de hoc va de thuyet trinh.
+Đây là bài tập lớn web được dựng theo hướng đơn giản, dễ học và dễ thuyết trình.
 
-## 1. Y tuong chinh
+## 1. Ý tưởng chính
 
-Project duoc rut gon tu:
+Project được rút gọn từ:
 
-- Tai lieu `Use Case phân tích nghiệp vụ.docx` trong `BTL WEB`
-- Code mau CRUD sinh vien trong `HieuBa_102136\Buoi 8`
-- Cach to chuc file PHP va dashboard trong `web_QLVT`
-- Cach hien thi board/list/card cua Trello
+- Tài liệu `Use Case phân tích nghiệp vụ.docx` trong `BTL WEB`
+- Code mẫu CRUD sinh viên trong `HieuBa_102136\Buoi 8`
+- Cách tổ chức file PHP và dashboard trong `web_QLVT`
+- Cách hiển thị board/list/card của Trello
 
-## 2. Chuc nang da lam
+## 2. Chức năng đã làm
 
-- Dang nhap bang tai khoan manager va member
-- Dashboard tong hop so board, so task, task hoan thanh, task tre han
-- Quan ly board cong viec
-- Tao task, giao nguoi thuc hien, gan deadline, muc uu tien
-- Hien thi task theo 4 cot trang thai:
-  - Chua bat dau
-  - Dang thuc hien
-  - Cho duyet
-  - Hoan thanh
-- Keo tha task sang cot khac de doi trang thai
-- Thanh vien chi cap nhat task duoc giao cho minh
+- Đăng nhập bằng tài khoản Admin, Quản lý và Nhân viên
+- Admin phân quyền, cập nhật tài khoản, xem báo cáo/thống kê và cập nhật thông báo
+- Quản lý cập nhật board, task, nhân sự trong board, giám sát và xem báo cáo
+- Nhân viên nhận việc, cập nhật trạng thái và tiến độ công việc
+- Dashboard tổng hợp số board, số task, task hoàn thành, task trễ hạn
+- Quản lý board công việc
+- Tạo task, giao người thực hiện, gắn deadline, mức ưu tiên
+- Cập nhật tài khoản cá nhân
+- Quản lý thông báo nội bộ
+- Báo cáo/thống kê tiến độ theo trạng thái, board và nhân sự
+- Tạo link đồng bộ deadline task sang Google Calendar
+- Hiển thị task theo 4 cột trạng thái:
+  - Chưa bắt đầu
+  - Đang thực hiện
+  - Chờ duyệt
+  - Hoàn thành
+- Kéo thả task sang cột khác để đổi trạng thái
+- Thành viên chỉ cập nhật task được giao cho mình
 
-## 3. Cau truc thu muc
+## 3. Cấu trúc thư mục
 
-- `config/`: ket noi DB va session
+- `config/`: kết nối DB và session
 - `partials/`: header, footer
-- `actions/`: xu ly luu, xoa, keo tha
-- `assets/css/styles.css`: giao dien
-- `assets/js/app.js`: JS modal va drag-drop
+- `actions/`: xử lý lưu, xóa, kéo thả
+- `assets/css/styles.css`: giao diện
+- `assets/js/app.js`: JS modal và drag-drop
+- `profile.php`: cập nhật tài khoản
+- `users.php`: Admin quản lý tài khoản và phân quyền
+- `notifications.php`: quản lý thông báo
+- `reports.php`: tổng hợp báo cáo và thống kê
+- `calendar.php`: lịch deadline và link Google Calendar
 - `database.sql`: file import MySQL
 
-## 4. Cach chay bang XAMPP
+## 4. Cách chạy bằng XAMPP
 
-1. Dat thu muc `fpt_task_manager` vao `htdocs` cua XAMPP.
-2. Mo `phpMyAdmin`.
+1. Đặt thư mục `fpt_task_manager` vào `htdocs` của XAMPP.
+2. Mở `phpMyAdmin`.
 3. Import file `database.sql`.
-4. Sua file `config/database.php` neu may ban khac `DB_USER`, `DB_PASS`, `DB_NAME`.
-5. Bat `Apache` va `MySQL`.
-6. Truy cap:
+4. Sửa file `config/database.php` nếu máy bạn khác `DB_USER`, `DB_PASS`, `DB_NAME`.
+5. Bật `Apache` và `MySQL`.
+6. Truy cập:
 
 ```text
 http://localhost/fpt_task_manager/login.php
 ```
 
-## 5. Tai khoan demo
+## 5. Tài khoản demo
 
-- Quan ly:
+- Admin:
+  - Username: `admin01`
+  - Password: `123456`
+
+- Quản lý:
   - Username: `manager01`
   - Password: `123456`
-- Thanh vien 1:
+- Thành viên 1:
   - Username: `nhanvien01`
   - Password: `123456`
-- Thanh vien 2:
+- Thành viên 2:
   - Username: `nhanvien02`
   - Password: `123456`
-- Thanh vien 3:
+- Thành viên 3:
   - Username: `nhanvien03`
   - Password: `123456`
 
-## 6. Goi y cach thuyet trinh
+## 6. Gợi ý cách thuyết trình
 
-- Neu noi theo Use Case:
-  - Actor chinh: Chu bang, Thanh vien
-  - Nghiep vu chinh: tao board, tao task, giao viec, cap nhat trang thai, xem dashboard
-- Neu noi theo giao dien:
-  - Dashboard = tong quan tien do
-  - Board = du an
-  - Column = trang thai cong viec
-  - Card = mot task cu the
+- Nếu nói theo Use Case:
+  - Actor chính: Chủ bảng, Thành viên
+  - Nghiệp vụ chính: tạo board, tạo task, giao việc, cập nhật trạng thái, xem dashboard
+- Nếu nói theo giao diện:
+  - Dashboard = tổng quan tiến độ
+  - Board = dự án
+  - Column = trạng thái công việc
+  - Card = một task cụ thể
 
-## 7. Huong mo rong neu can nang cap
+## 7. Hướng mở rộng nếu cần nâng cấp
 
-- Them binh luan cho task
-- Them upload file minh chung
-- Them bo loc theo nhan vien / deadline
-- Them bieu do thong ke bang Chart.js
-- Them lich deadline dang calendar
+- Thêm bình luận cho task
+- Thêm upload file minh chứng
+- Thêm bộ lọc theo nhân viên / deadline
+- Thêm biểu đồ thống kê bằng Chart.js
+- Thêm lịch deadline dạng calendar

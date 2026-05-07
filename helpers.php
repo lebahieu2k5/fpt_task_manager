@@ -7,8 +7,23 @@ function e($value)
 
 function redirect($url)
 {
-    header('Location: ' . $url);
+    header('Lọcation: ' . $url);
     exit;
+}
+
+function app_url($path)
+{
+    $basePath = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])) : '';
+
+    if (substr($basePath, -8) === '/actions') {
+        $basePath = dirname($basePath);
+    }
+
+    if ($basePath === '/' || $basePath === '.') {
+        $basePath = '';
+    }
+
+    return rtrim($basePath, '/') . '/' . ltrim($path, '/');
 }
 
 function set_flash($type, $message)
@@ -48,6 +63,35 @@ function current_user_role()
     return $user ? $user['role'] : null;
 }
 
+function is_admin()
+{
+    return current_user_role() === 'admin';
+}
+
+function is_manager()
+{
+    return current_user_role() === 'manager';
+}
+
+function is_member()
+{
+    return current_user_role() === 'member';
+}
+
+function role_label($role)
+{
+    switch ($role) {
+        case 'admin':
+            return 'Admin';
+        case 'manager':
+            return 'Quản lý';
+        case 'member':
+            return 'Nhân viên';
+        default:
+            return 'Không xác định';
+    }
+}
+
 function is_logged_in()
 {
     return current_user() !== null;
@@ -56,8 +100,8 @@ function is_logged_in()
 function require_login()
 {
     if (!is_logged_in()) {
-        set_flash('warning', 'Vui long dang nhap de tiep tuc.');
-        redirect('login.php');
+        set_flash('warning', 'Vui lòng đăng nhập để tiếp tục.');
+        redirect(app_url('login.php'));
     }
 }
 
@@ -65,24 +109,44 @@ function require_manager()
 {
     require_login();
 
-    if (current_user_role() !== 'manager') {
-        set_flash('danger', 'Ban khong co quyen thuc hien chuc nang nay.');
-        redirect('dashboard.php');
+    if (!is_manager()) {
+        set_flash('danger', 'Bạn không có quyền thực hiện chức năng này.');
+        redirect(app_url('dashboard.php'));
+    }
+}
+
+function require_admin()
+{
+    require_login();
+
+    if (!is_admin()) {
+        set_flash('danger', 'Chỉ Admin mới có quyền thực hiện chức năng này.');
+        redirect(app_url('dashboard.php'));
+    }
+}
+
+function require_report_access()
+{
+    require_login();
+
+    if (!is_admin() && !is_manager()) {
+        set_flash('danger', 'Bạn không có quyền xem báo cáo.');
+        redirect(app_url('dashboard.php'));
     }
 }
 
 function can_manage_board($board)
 {
-    return current_user_role() === 'manager' && !empty($board);
+    return is_manager() && !empty($board);
 }
 
 function can_edit_task($task)
 {
-    if (current_user_role() === 'manager') {
+    if (is_manager()) {
         return true;
     }
 
-    return !empty($task) && (int) $task['assignee_id'] === current_user_id();
+    return is_member() && !empty($task) && (int) $task['assignee_id'] === current_user_id();
 }
 
 function priority_badge_class($priority)
@@ -90,7 +154,7 @@ function priority_badge_class($priority)
     switch ($priority) {
         case 'Cao':
             return 'bg-danger-subtle text-danger';
-        case 'Trung binh':
+        case 'Trung bình':
             return 'bg-warning-subtle text-warning-emphasis';
         default:
             return 'bg-success-subtle text-success';
@@ -117,7 +181,7 @@ function progress_bar_class($progress)
 function format_date_vn($date)
 {
     if (empty($date)) {
-        return 'Chua co';
+        return 'Chưa có';
     }
 
     $timestamp = strtotime($date);
@@ -132,7 +196,7 @@ function format_date_vn($date)
 function format_datetime_vn($date)
 {
     if (empty($date)) {
-        return 'Chua co';
+        return 'Chưa có';
     }
 
     $timestamp = strtotime($date);
@@ -142,6 +206,30 @@ function format_datetime_vn($date)
     }
 
     return date('d/m/Y H:i', $timestamp);
+}
+
+function google_calendar_url($task)
+{
+    if (empty($task['deadline'])) {
+        return '#';
+    }
+
+    $start = date('Ymd', strtotime($task['deadline']));
+    $end = date('Ymd', strtotime($task['deadline'] . ' +1 day'));
+    $details = 'Board: ' . (isset($task['board_name']) ? $task['board_name'] : '');
+
+    if (!empty($task['assignee_name'])) {
+        $details .= "\nNgười thực hiện: " . $task['assignee_name'];
+    }
+
+    if (!empty($task['description'])) {
+        $details .= "\n" . $task['description'];
+    }
+
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        . '&text=' . rawurlencode($task['title'])
+        . '&dates=' . $start . '/' . $end
+        . '&details=' . rawurlencode($details);
 }
 
 function task_is_overdue($task)

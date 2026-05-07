@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     initBoardModal();
     initTaskModal();
+    initNotificationModal();
+    initUserModal();
     initTaskDragAndDrop();
 });
 
@@ -25,7 +27,7 @@ function initBoardModal() {
         });
 
         if (mode === 'edit' && button) {
-            title.textContent = 'Cap nhat board';
+            title.textContent = 'Cập nhật board';
             document.getElementById('board_id').value = button.getAttribute('data-board-id') || '';
             document.getElementById('board_name').value = button.getAttribute('data-board-name') || '';
             document.getElementById('board_description').value = button.getAttribute('data-board-description') || '';
@@ -37,7 +39,7 @@ function initBoardModal() {
                 option.selected = members.indexOf(option.value) !== -1;
             });
         } else {
-            title.textContent = 'Tao board moi';
+            title.textContent = 'Tạo board mới';
             document.getElementById('board_id').value = '';
         }
     });
@@ -74,13 +76,13 @@ function initTaskModal() {
             document.getElementById('task_board_id').value;
 
         if (mode === 'edit' && button) {
-            title.textContent = canManage ? 'Cap nhat task' : 'Thanh vien cap nhat task';
+            title.textContent = canManage ? 'Cập nhật task' : 'Thành viên cập nhật task';
             document.getElementById('task_id').value = button.getAttribute('data-task-id') || '';
             document.getElementById('task_title').value = button.getAttribute('data-task-title') || '';
             document.getElementById('task_description').value = button.getAttribute('data-task-description') || '';
             document.getElementById('task_assignee_id').value = button.getAttribute('data-task-assignee') || '';
             document.getElementById('task_status_id').value = button.getAttribute('data-task-status') || '';
-            document.getElementById('task_priority').value = button.getAttribute('data-task-priority') || 'Trung binh';
+            document.getElementById('task_priority').value = button.getAttribute('data-task-priority') || 'Trung bình';
             document.getElementById('task_deadline').value = button.getAttribute('data-task-deadline') || '';
             document.getElementById('task_progress_percent').value = button.getAttribute('data-task-progress') || 0;
             document.getElementById('task_note').value = button.getAttribute('data-task-note') || '';
@@ -90,9 +92,75 @@ function initTaskModal() {
                 toggleManagerFields(managerFields, false);
             }
         } else {
-            title.textContent = 'Tao task moi';
+            title.textContent = 'Tạo task mới';
             document.getElementById('task_id').value = '';
             document.getElementById('task_progress_percent').value = 0;
+        }
+    });
+}
+
+function initNotificationModal() {
+    var modalElement = document.getElementById('notificationModal');
+
+    if (!modalElement) {
+        return;
+    }
+
+    var form = document.getElementById('notificationForm');
+    var title = modalElement.querySelector('.modal-title');
+
+    modalElement.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var mode = button ? button.getAttribute('data-mode') : 'create';
+
+        form.reset();
+
+        if (mode === 'edit' && button) {
+            title.textContent = 'Cập nhật thông báo';
+            document.getElementById('notification_id').value = button.getAttribute('data-notification-id') || '';
+            document.getElementById('notification_title').value = button.getAttribute('data-notification-title') || '';
+            document.getElementById('notification_content').value = button.getAttribute('data-notification-content') || '';
+            document.getElementById('notification_priority').value = button.getAttribute('data-notification-priority') || 'Trung bình';
+        } else {
+            title.textContent = 'Tạo thông báo mới';
+            document.getElementById('notification_id').value = '';
+        }
+    });
+}
+
+function initUserModal() {
+    var modalElement = document.getElementById('userModal');
+
+    if (!modalElement) {
+        return;
+    }
+
+    var form = document.getElementById('userForm');
+    var title = modalElement.querySelector('.modal-title');
+    var password = document.getElementById('user_password');
+
+    modalElement.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var mode = button ? button.getAttribute('data-mode') : 'create';
+
+        form.reset();
+
+        if (mode === 'edit' && button) {
+            title.textContent = 'Cập nhật tài khoản';
+            document.getElementById('user_id').value = button.getAttribute('data-user-id') || '';
+            document.getElementById('user_full_name').value = button.getAttribute('data-user-full-name') || '';
+            document.getElementById('user_email').value = button.getAttribute('data-user-email') || '';
+            document.getElementById('user_username').value = button.getAttribute('data-user-username') || '';
+            document.getElementById('user_role').value = button.getAttribute('data-user-role') || 'member';
+            document.getElementById('user_department').value = button.getAttribute('data-user-department') || '';
+            password.required = false;
+            password.placeholder = 'Để trống nếu không đổi';
+        } else {
+            title.textContent = 'Tạo tài khoản mới';
+            document.getElementById('user_id').value = '';
+            document.getElementById('user_role').value = 'member';
+            password.required = true;
+            password.placeholder = '';
         }
     });
 }
@@ -160,14 +228,14 @@ function initTaskDragAndDrop() {
                 })
                 .then(function (result) {
                     if (!result.success) {
-                        alert(result.message || 'Khong the cap nhat trang thai task.');
+                        alert(result.message || 'Không thể cập nhật trạng thái task.');
                         return;
                     }
 
                     window.location.reload();
                 })
                 .catch(function () {
-                    alert('Co loi xay ra khi keo tha task.');
+                    alert('Có lỗi xảy ra khi kéo thả task.');
                 });
         });
     });

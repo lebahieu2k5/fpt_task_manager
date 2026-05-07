@@ -6,6 +6,7 @@ USE `fpt_task_manager`;
 
 DROP TABLE IF EXISTS `tasks`;
 DROP TABLE IF EXISTS `board_members`;
+DROP TABLE IF EXISTS `notifications`;
 DROP TABLE IF EXISTS `boards`;
 DROP TABLE IF EXISTS `task_statuses`;
 DROP TABLE IF EXISTS `users`;
@@ -16,7 +17,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(120) DEFAULT NULL,
     `username` VARCHAR(50) NOT NULL UNIQUE,
     `password_hash` VARCHAR(255) NOT NULL,
-    `role` ENUM('manager', 'member') NOT NULL DEFAULT 'member',
+    `role` ENUM('admin', 'manager', 'member') NOT NULL DEFAULT 'member',
     `department` VARCHAR(120) DEFAULT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
@@ -32,6 +33,17 @@ CREATE TABLE `boards` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_boards_owner` FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `notifications` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(160) NOT NULL,
+    `content` TEXT NOT NULL,
+    `priority` ENUM('Thấp', 'Trung bình', 'Cao') NOT NULL DEFAULT 'Trung bình',
+    `created_by` INT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_notifications_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `board_members` (
@@ -57,7 +69,7 @@ CREATE TABLE `tasks` (
     `status_id` INT NOT NULL,
     `title` VARCHAR(150) NOT NULL,
     `description` TEXT DEFAULT NULL,
-    `priority` ENUM('Thap', 'Trung binh', 'Cao') NOT NULL DEFAULT 'Trung binh',
+    `priority` ENUM('Thấp', 'Trung bình', 'Cao') NOT NULL DEFAULT 'Trung bình',
     `assignee_id` INT DEFAULT NULL,
     `deadline` DATE DEFAULT NULL,
     `progress_percent` INT NOT NULL DEFAULT 0,
@@ -74,20 +86,25 @@ CREATE TABLE `tasks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `username`, `password_hash`, `role`, `department`) VALUES
-(1, 'Nguyen Quoc Bao', 'bao.pm@fpt.com', 'manager01', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'manager', 'Phong quan ly du an'),
-(2, 'Tran Minh Chau', 'chau.backend@fpt.com', 'nhanvien01', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'Backend Team'),
-(3, 'Le Hoang Nam', 'nam.frontend@fpt.com', 'nhanvien02', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'Frontend Team'),
-(4, 'Pham Thu Ha', 'ha.qa@fpt.com', 'nhanvien03', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'QA Team');
+(1, 'Nguyễn Quốc Bảo', 'bao.pm@fpt.com', 'manager01', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'manager', 'Phòng quản lý dự án'),
+(2, 'Trần Minh Châu', 'chau.backend@fpt.com', 'nhanvien01', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'Backend Team'),
+(3, 'Lê Hoàng Nam', 'nam.frontend@fpt.com', 'nhanvien02', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'Frontend Team'),
+(4, 'Phạm Thu Hà', 'ha.qa@fpt.com', 'nhanvien03', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'member', 'QA Team'),
+(5, 'Admin Hệ Thống', 'admin@fpt.com', 'admin01', '$2y$10$0Nta1cKJDdq6OqGS7GK3UeAHwvq6M0E3WtrDgZJgERN9d7Qr4NfPG', 'admin', 'Quản trị hệ thống');
 
 INSERT INTO `task_statuses` (`id`, `status_name`, `status_key`, `display_order`) VALUES
-(1, 'Chua bat dau', 'todo', 1),
-(2, 'Dang thuc hien', 'doing', 2),
-(3, 'Cho duyet', 'review', 3),
-(4, 'Hoan thanh', 'done', 4);
+(1, 'Chưa bắt đầu', 'todo', 1),
+(2, 'Đang thực hiện', 'doing', 2),
+(3, 'Chờ duyệt', 'review', 3),
+(4, 'Hoàn thành', 'done', 4);
 
 INSERT INTO `boards` (`id`, `name`, `description`, `owner_id`, `start_date`, `end_date`) VALUES
-(1, 'Website quan li cong viec FPT', 'Board chinh de theo doi phan tich, code, test va bao cao tien do.', 1, '2026-04-20', '2026-05-20'),
-(2, 'Sprint kiem thu giao dien', 'Board phu tap trung vao fix giao dien, responsive va kiem thu chuc nang.', 1, '2026-04-25', '2026-05-10');
+(1, 'Website quản lý công việc FPT', 'Board chính để theo dõi phân tích, code, test và báo cáo tiến độ.', 1, '2026-04-20', '2026-05-20'),
+(2, 'Sprint kiểm thử giao diện', 'Board phụ tập trung vào fix giao diện, responsive và kiểm thử chức năng.', 1, '2026-04-25', '2026-05-10');
+
+INSERT INTO `notifications` (`id`, `title`, `content`, `priority`, `created_by`) VALUES
+(1, 'Cập nhật deadline', 'Các thành viên kiểm tra task sắp đến hạn và cập nhật tiến độ trước cuối ngày.', 'Cao', 1),
+(2, 'Kiểm thử giao diện', 'Nhóm QA tổng hợp lỗi hiển thị và gắn mức ưu tiên cho từng task.', 'Trung bình', 1);
 
 INSERT INTO `board_members` (`board_id`, `user_id`) VALUES
 (1, 2),
@@ -97,9 +114,9 @@ INSERT INTO `board_members` (`board_id`, `user_id`) VALUES
 (2, 4);
 
 INSERT INTO `tasks` (`board_id`, `status_id`, `title`, `description`, `priority`, `assignee_id`, `deadline`, `progress_percent`, `note`, `position_order`, `created_by`) VALUES
-(1, 1, 'Hoan thien phan tich Use Case', 'Tong hop actor, use case va workflow theo file tai lieu trong folder BTL WEB.', 'Cao', 2, '2026-04-30', 20, 'Dang bo sung mo ta nghiep vu.', 1, 1),
-(1, 2, 'Dung giao dien board kieu Trello', 'Tao cac cot trang thai, task card va khu vuc keo tha bang HTML, CSS, Bootstrap.', 'Cao', 3, '2026-05-02', 65, 'Da xong layout, dang them keo tha task.', 1, 1),
-(1, 3, 'Kiem thu dang nhap va phan quyen', 'Test luong manager va thanh vien, dam bao truy cap dung chuc nang.', 'Trung binh', 4, '2026-05-03', 80, 'Da test tay dang nhap, dang ghi lai loi.', 1, 1),
-(1, 4, 'Thiet ke database va du lieu mau', 'Tao bang users, boards, tasks va seed du lieu de demo.', 'Trung binh', 2, '2026-04-28', 100, 'Da import thanh cong vao MySQL.', 1, 1),
-(2, 2, 'Toi uu giao dien mobile', 'Can chinh sidebar, card va bang du lieu khi man hinh nho.', 'Trung binh', 3, '2026-05-05', 45, 'Dang tinh lai breakpoint cho tablet.', 1, 1),
-(2, 1, 'Lap danh sach bug UI', 'Tong hop cac loi hien thi va ghi muc uu tien de fix.', 'Thap', 4, '2026-05-01', 10, 'Moi tao task, chua cap nhat them.', 1, 1);
+(1, 1, 'Hoàn thiện phân tích yêu cầu', 'Tổng hợp actor, chức năng và luồng xử lý chính của hệ thống.', 'Cao', 2, '2026-04-30', 20, 'Đang bổ sung mô tả nghiệp vụ.', 1, 1),
+(1, 2, 'Dựng giao diện quản lý board', 'Tạo các cột trạng thái, task card và khu vực kéo thả bằng HTML, CSS, Bootstrap.', 'Cao', 3, '2026-05-02', 65, 'Đã xong layout, đang thêm kéo thả task.', 1, 1),
+(1, 3, 'Kiểm thử đăng nhập và phân quyền', 'Test luồng manager và thành viên, đảm bảo truy cập đúng chức năng.', 'Trung bình', 4, '2026-05-03', 80, 'Đã test tay đăng nhập, đang ghi lại lỗi.', 1, 1),
+(1, 4, 'Thiết kế database và dữ liệu ban đầu', 'Tạo bảng users, boards và tasks cho hệ thống.', 'Trung bình', 2, '2026-04-28', 100, 'Đã import thành công vào MySQL.', 1, 1),
+(2, 2, 'Tối ưu giao diện mobile', 'Căn chỉnh sidebar, card và bảng dữ liệu khi màn hình nhỏ.', 'Trung bình', 3, '2026-05-05', 45, 'Đang tính lại breakpoint cho tablet.', 1, 1),
+(2, 1, 'Lập danh sách bug UI', 'Tổng hợp các lỗi hiển thị và ghi mức ưu tiên để fix.', 'Thấp', 4, '2026-05-01', 10, 'Mới tạo task, chưa cập nhật thêm.', 1, 1);

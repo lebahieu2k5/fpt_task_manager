@@ -2,27 +2,24 @@
 require_once __DIR__ . '/bootstrap.php';
 require_login();
 
-$pageTitle = 'Danh sach bang cong viec';
+$pageTitle = 'Danh sách bảng công việc';
 $activePage = 'boards';
 
 $boards = fetch_boards_for_current_user();
-$users = fetch_all_users();
+$users = fetch_assignable_users();
 
 require_once __DIR__ . '/partials/header.php';
 ?>
 <div class="content-card mb-4">
     <div class="section-header">
         <div>
-            <h3 class="section-title">Tat ca bang cong viec</h3>
-            <p class="section-subtitle">
-                Moi board dai dien cho mot nhom cong viec hoac mot du an. Day la phan gan nhat voi "Board" trong Trello.
-            </p>
+            <h3 class="section-title">Tất cả bảng công việc</h3>
         </div>
 
-        <?php if (current_user_role() === 'manager') { ?>
+        <?php if (is_manager()) { ?>
             <button class="btn btn-brand" type="button" data-bs-toggle="modal" data-bs-target="#boardModal" data-mode="create">
                 <i class="bi bi-plus-circle"></i>
-                Tao board moi
+                Tạo board mới
             </button>
         <?php } ?>
     </div>
@@ -48,7 +45,7 @@ require_once __DIR__ . '/partials/header.php';
                     </div>
 
                     <div class="board-meta">
-                        <span><i class="bi bi-people"></i> <?php echo e((int) $board['member_count']); ?> thanh vien</span>
+                        <span><i class="bi bi-people"></i> <?php echo e((int) $board['member_count']); ?> thành viên</span>
                         <span><i class="bi bi-list-task"></i> <?php echo e((int) $board['task_count']); ?> task</span>
                         <span><i class="bi bi-calendar-event"></i> <?php echo e(format_date_vn($board['end_date'])); ?></span>
                     </div>
@@ -59,10 +56,10 @@ require_once __DIR__ . '/partials/header.php';
 
                     <div class="d-flex justify-content-between align-items-center mt-3 gap-2">
                         <a class="btn btn-outline-primary btn-sm" href="board.php?id=<?php echo (int) $board['id']; ?>">
-                            Xem chi tiet
+                            Xem chi tiết
                         </a>
 
-                        <?php if (current_user_role() === 'manager') { ?>
+                        <?php if (is_manager()) { ?>
                             <div class="d-flex gap-2">
                                 <button
                                     class="btn btn-outline-secondary btn-sm"
@@ -77,10 +74,10 @@ require_once __DIR__ . '/partials/header.php';
                                     data-board-end="<?php echo e($board['end_date']); ?>"
                                     data-board-members="<?php echo e(implode(',', $memberIds)); ?>"
                                 >
-                                    Sua
+                                    Sửa
                                 </button>
-                                <a class="btn btn-outline-danger btn-sm" href="actions/board_delete.php?id=<?php echo (int) $board['id']; ?>" onclick="return confirm('Ban co chac muon xoa board nay khong?')">
-                                    Xoa
+                                <a class="btn btn-outline-danger btn-sm" href="actions/board_delete.php?id=<?php echo (int) $board['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa board này không?')">
+                                    Xóa
                                 </a>
                             </div>
                         <?php } ?>
@@ -91,56 +88,55 @@ require_once __DIR__ . '/partials/header.php';
 
         <?php if (empty($boards)) { ?>
             <div class="col-12">
-                <div class="empty-box">Chua co bang cong viec nao duoc tao.</div>
+                <div class="empty-box">Chưa có bảng công việc nào được tạo.</div>
             </div>
         <?php } ?>
     </div>
 </div>
 
-<?php if (current_user_role() === 'manager') { ?>
+<?php if (is_manager()) { ?>
     <div class="modal fade" id="boardModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <form method="post" action="actions/board_save.php" id="boardForm">
                     <div class="modal-header">
-                        <h5 class="modal-title">Thong tin board</h5>
+                        <h5 class="modal-title">Thông tin board</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="id" id="board_id">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Ten board</label>
+                                <label class="form-label">Tên board</label>
                                 <input type="text" class="form-control" name="name" id="board_name" required>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Ngay bat dau</label>
+                                <label class="form-label">Ngày bắt đầu</label>
                                 <input type="date" class="form-control" name="start_date" id="board_start_date">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Han hoan thanh</label>
+                                <label class="form-label">Hạn hoàn thành</label>
                                 <input type="date" class="form-control" name="end_date" id="board_end_date">
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Mo ta ngan</label>
+                                <label class="form-label">Mô tả ngắn</label>
                                 <textarea class="form-control" name="description" id="board_description" rows="3"></textarea>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Moi thanh vien vao board</label>
+                                <label class="form-label">Mời thành viên vào board</label>
                                 <select class="form-select" name="member_ids[]" id="board_member_ids" multiple size="6">
                                     <?php foreach ($users as $user) { ?>
                                         <option value="<?php echo (int) $user['id']; ?>">
-                                            <?php echo e($user['full_name']); ?> - <?php echo e($user['role']); ?>
+                                            <?php echo e($user['full_name']); ?> - <?php echo e(role_label($user['role'])); ?>
                                         </option>
                                     <?php } ?>
                                 </select>
-                                <div class="form-text">Giu phim Ctrl de chon nhieu thanh vien.</div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-light" type="button" data-bs-dismiss="modal">Dong</button>
-                        <button class="btn btn-brand" type="submit">Luu board</button>
+                        <button class="btn btn-light" type="button" data-bs-dismiss="modal">Đóng</button>
+                        <button class="btn btn-brand" type="submit">Lưu board</button>
                     </div>
                 </form>
             </div>

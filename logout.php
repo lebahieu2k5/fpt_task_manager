@@ -11,5 +11,5 @@ if (ini_get('session.use_cookies')) {
 session_destroy();
 session_start();
 
-set_flash('success', 'Ban da dang xuat khoi he thong.');
+set_flash('success', 'Bạn đã đăng xuất khỏi hệ thống.');
 redirect('login.php');

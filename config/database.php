@@ -14,5 +14,5 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $exception) {
-    die('Khong the ket noi database: ' . $exception->getMessage());
+    die('Không thể kết nối database: ' . $exception->getMessage());
 }

@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(array('success' => false, 'message' => 'Phuong thuc khong hop le.'));
+    echo json_encode(array('success' => false, 'message' => 'Phương thức không hợp lệ.'));
     exit;
 }
 
@@ -16,7 +16,7 @@ $task = fetch_task_by_id($taskId);
 
 if (!$task) {
     http_response_code(404);
-    echo json_encode(array('success' => false, 'message' => 'Khong tim thay task.'));
+    echo json_encode(array('success' => false, 'message' => 'Không tìm thấy task.'));
     exit;
 }
 
@@ -24,13 +24,13 @@ $board = fetch_board_by_id($task['board_id']);
 
 if (!$board) {
     http_response_code(403);
-    echo json_encode(array('success' => false, 'message' => 'Khong co quyen truy cap board.'));
+    echo json_encode(array('success' => false, 'message' => 'Không có quyền truy cập board.'));
     exit;
 }
 
 if (!can_edit_task($task)) {
     http_response_code(403);
-    echo json_encode(array('success' => false, 'message' => 'Ban khong co quyen di chuyen task nay.'));
+    echo json_encode(array('success' => false, 'message' => 'Bạn không có quyền di chuyển task này.'));
     exit;
 }
 
@@ -46,7 +46,7 @@ foreach ($statuses as $status) {
 
 if (!$selectedStatus) {
     http_response_code(422);
-    echo json_encode(array('success' => false, 'message' => 'Trang thai khong hop le.'));
+    echo json_encode(array('success' => false, 'message' => 'Trạng thái không hợp lệ.'));
     exit;
 }
 
@@ -85,6 +85,6 @@ $statement->execute(
 echo json_encode(
     array(
         'success' => true,
-        'message' => 'Da cap nhat trang thai task.',
+        'message' => 'Đã cập nhật trạng thái task.',
     )
 );

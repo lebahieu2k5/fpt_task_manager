@@ -37,7 +37,7 @@ $boardId = isset($_POST['board_id']) ? (int) $_POST['board_id'] : 0;
 $board = fetch_board_by_id($boardId);
 
 if (!$board) {
-    set_flash('danger', 'Khong tim thay board de luu task.');
+    set_flash('danger', 'Không tìm thấy board để lưu task.');
     redirect('../boards.php');
 }
 
@@ -61,31 +61,31 @@ if ($taskId > 0) {
     $task = fetch_task_by_id($taskId);
 
     if (!$task || (int) $task['board_id'] !== $boardId) {
-        set_flash('danger', 'Khong tim thay task can cap nhat.');
+        set_flash('danger', 'Không tìm thấy task cần cập nhật.');
         redirect('../board.php?id=' . $boardId);
     }
 
     if (!can_edit_task($task)) {
-        set_flash('danger', 'Ban khong co quyen cap nhat task nay.');
+        set_flash('danger', 'Bạn không có quyền cập nhật task này.');
         redirect('../board.php?id=' . $boardId);
     }
 
-    if (current_user_role() === 'manager') {
+    if (is_manager()) {
         $title = trim(isset($_POST['title']) ? $_POST['title'] : '');
 
         if ($title === '') {
-            set_flash('danger', 'Ten task khong duoc de trong.');
+            set_flash('danger', 'Tên task không được để trống.');
             redirect('../board.php?id=' . $boardId);
         }
 
         $description = trim(isset($_POST['description']) ? $_POST['description'] : '');
-        $priority = isset($_POST['priority']) ? $_POST['priority'] : 'Trung binh';
+        $priority = isset($_POST['priority']) ? $_POST['priority'] : 'Trung bình';
         $assigneeId = !empty($_POST['assignee_id']) ? (int) $_POST['assignee_id'] : null;
         $deadline = !empty($_POST['deadline']) ? $_POST['deadline'] : null;
         $note = trim(isset($_POST['note']) ? $_POST['note'] : '');
 
         if ($assigneeId !== null && !in_array($assigneeId, $boardMembers, true)) {
-            set_flash('danger', 'Nguoi duoc giao phai nam trong board.');
+            set_flash('danger', 'Người được giao phải nằm trong board.');
             redirect('../board.php?id=' . $boardId);
         }
 
@@ -136,7 +136,7 @@ if ($taskId > 0) {
         );
     }
 
-    set_flash('success', 'Cap nhat task thanh cong.');
+    set_flash('success', 'Cập nhật task thành công.');
     redirect('../board.php?id=' . $boardId);
 }
 
@@ -144,18 +144,18 @@ require_manager();
 
 $title = trim(isset($_POST['title']) ? $_POST['title'] : '');
 $description = trim(isset($_POST['description']) ? $_POST['description'] : '');
-$priority = isset($_POST['priority']) ? $_POST['priority'] : 'Trung binh';
+$priority = isset($_POST['priority']) ? $_POST['priority'] : 'Trung bình';
 $assigneeId = !empty($_POST['assignee_id']) ? (int) $_POST['assignee_id'] : null;
 $deadline = !empty($_POST['deadline']) ? $_POST['deadline'] : null;
 $note = trim(isset($_POST['note']) ? $_POST['note'] : '');
 
 if ($title === '') {
-    set_flash('danger', 'Ten task khong duoc de trong.');
+    set_flash('danger', 'Tên task không được để trống.');
     redirect('../board.php?id=' . $boardId);
 }
 
 if ($assigneeId !== null && !in_array($assigneeId, $boardMembers, true)) {
-    set_flash('danger', 'Nguoi duoc giao phai nam trong board.');
+    set_flash('danger', 'Người được giao phải nằm trong board.');
     redirect('../board.php?id=' . $boardId);
 }
 
@@ -195,5 +195,5 @@ $statement->execute(
     )
 );
 
-set_flash('success', 'Da tao task moi thanh cong.');
+set_flash('success', 'Đã tạo task mới thành công.');
 redirect('../board.php?id=' . $boardId);
