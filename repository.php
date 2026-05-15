@@ -38,9 +38,10 @@ function fetch_all_users()
 
     return $statement->fetchAll();
 }
-
+ 
 function fetch_assignable_users()
 {
+    // Chỉ lấy người dùng có vai trò manager hoặc member để giao nhiệm vụ
     global $pdo;
 
     $statement = $pdo->query(
@@ -60,6 +61,7 @@ function fetch_assignable_users()
 
 function username_exists($username, $ignoreUserId = 0)
 {
+    //
     global $pdo;
 
     $statement = $pdo->prepare(
@@ -178,6 +180,7 @@ function fetch_notification_by_id($notificationId)
 
 function fetch_task_status_report()
 {
+    // Báo cáo số lượng công việc theo trạng thái, chỉ lấy những trạng thái có công việc
     global $pdo;
 
     if (is_admin() || is_manager()) {
@@ -226,6 +229,7 @@ function fetch_task_status_report()
 
 function fetch_assignee_report()
 {
+    // Báo cáo số lượng công việc theo người được giao, chỉ lấy những người có công việc được giao
     global $pdo;
 
     if (is_admin() || is_manager()) {
@@ -235,8 +239,7 @@ function fetch_assignee_report()
                 COALESCE(u.full_name, 'Chưa giao') AS assignee_name,
                 COUNT(t.id) AS task_count,
                 SUM(CASE WHEN s.status_key = 'done' THEN 1 ELSE 0 END) AS done_count,
-                SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count,
-                ROUND(AVG(t.progress_percent)) AS avg_progress
+                SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count
             FROM tasks t
             INNER JOIN task_statuses s ON s.id = t.status_id
             LEFT JOIN users u ON u.id = t.assignee_id
@@ -254,8 +257,7 @@ function fetch_assignee_report()
             COALESCE(u.full_name, 'Chưa giao') AS assignee_name,
             COUNT(t.id) AS task_count,
             SUM(CASE WHEN s.status_key = 'done' THEN 1 ELSE 0 END) AS done_count,
-            SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count,
-            ROUND(AVG(t.progress_percent)) AS avg_progress
+            SUM(CASE WHEN t.deadline < CURDATE() AND s.status_key <> 'done' THEN 1 ELSE 0 END) AS overdue_count
         FROM tasks t
         INNER JOIN task_statuses s ON s.id = t.status_id
         INNER JOIN boards b ON b.id = t.board_id
@@ -278,36 +280,34 @@ function fetch_assignee_report()
     return $statement->fetchAll();
 }
 
-function fetch_calendar_tasks($limit)
+function fetch_calendar_tasks($limit, $statusId = 0)
 {
     global $pdo;
 
     $limit = (int) $limit;
+    $statusId = (int) $statusId;
+    $params = array('member_user_id_check' => current_user_id());
 
-    if (is_admin() || is_manager()) {
-        $sql = "
-            SELECT
-                t.*,
-                s.status_key,
-                b.name AS board_name,
-                u.full_name AS assignee_name
-            FROM tasks t
-            INNER JOIN task_statuses s ON s.id = t.status_id
-            INNER JOIN boards b ON b.id = t.board_id
-            LEFT JOIN users u ON u.id = t.assignee_id
-            WHERE t.deadline IS NOT NULL AND s.status_key <> 'done'
-            ORDER BY t.deadline ASC, t.progress_percent DESC
-            LIMIT {$limit}
-        ";
-        $statement = $pdo->query($sql);
+    $where = "t.deadline IS NOT NULL";
 
-        return $statement->fetchAll();
+    if ($statusId > 0) {
+        $where .= " AND t.status_id = :status_id";
+        $params['status_id'] = $statusId;
+    } else {
+        $where .= " AND s.status_key <> 'done'";
+    }
+
+    if (!is_admin() && !is_manager()) {
+        $where .= " AND (b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL)";
+        $params['owner_user_id'] = current_user_id();
+        $params['member_user_id'] = current_user_id();
     }
 
     $sql = "
         SELECT
             t.*,
             s.status_key,
+            s.status_name,
             b.name AS board_name,
             u.full_name AS assignee_name
         FROM tasks t
@@ -315,23 +315,15 @@ function fetch_calendar_tasks($limit)
         INNER JOIN boards b ON b.id = t.board_id
         LEFT JOIN board_members access_member
             ON access_member.board_id = b.id
-            AND access_member.user_id = :member_user_id
+            AND access_member.user_id = :member_user_id_check
         LEFT JOIN users u ON u.id = t.assignee_id
-        WHERE
-            t.deadline IS NOT NULL
-            AND s.status_key <> 'done'
-            AND (b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL)
-        ORDER BY t.deadline ASC, t.progress_percent DESC
+        WHERE {$where}
+        ORDER BY t.deadline ASC
         LIMIT {$limit}
     ";
 
     $statement = $pdo->prepare($sql);
-    $statement->execute(
-        array(
-            'member_user_id' => current_user_id(),
-            'owner_user_id' => current_user_id(),
-        )
-    );
+    $statement->execute($params);
 
     return $statement->fetchAll();
 }
@@ -632,7 +624,7 @@ function fetch_upcoming_tasks($limit)
             INNER JOIN boards b ON b.id = t.board_id
             LEFT JOIN users u ON u.id = t.assignee_id
             WHERE t.deadline IS NOT NULL AND s.status_key <> 'done'
-            ORDER BY t.deadline ASC, t.progress_percent DESC
+            ORDER BY t.deadline ASC
             LIMIT {$limit}
         ";
         $statement = $pdo->query($sql);
@@ -656,7 +648,7 @@ function fetch_upcoming_tasks($limit)
             t.deadline IS NOT NULL
             AND s.status_key <> 'done'
             AND (b.owner_id = :owner_user_id OR access_member.user_id IS NOT NULL)
-        ORDER BY t.deadline ASC, t.progress_percent DESC
+        ORDER BY t.deadline ASC
         LIMIT {$limit}
     ";
 

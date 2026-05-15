@@ -60,6 +60,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert-danger"><?php echo e($error); ?></div>
                 <?php } ?>
 
+                <div class="text-center mb-4 vstack gap-2">
+                    <span class="brand-mark mx-auto" style="width: 64px; height: 64px; border-radius: 16px; padding: 8px;">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="skewX(-15) translate(5, 0)">
+                                <rect x="5" y="15" width="22" height="70" rx="5" fill="#F37021" />
+                                <rect x="36" y="15" width="22" height="70" rx="5" fill="#005CAA" />
+                                <rect x="67" y="15" width="22" height="70" rx="5" fill="#009F4D" />
+                            </g>
+                        </svg>
+                    </span>
+                    <h1 class="h3 fw-bold mt-2">FPT Workflow</h1>
+                    <p class="text-secondary small">Hệ thống quản lý công việc nội bộ</p>
+                </div>
+
                 <form method="post" action="login.php" class="vstack gap-3">
                     <div>
                         <label class="form-label">Tên đăng nhập</label>

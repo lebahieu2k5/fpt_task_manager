@@ -72,21 +72,7 @@ function valid_priority($priority)
 
 function fix_progress($progress, $status)
 {
-    $progress = (int) $progress;
-
-    if ($progress < 0) {
-        $progress = 0;
-    }
-
-    if ($progress > 100) {
-        $progress = 100;
-    }
-
-    if ($status === 'done') {
-        $progress = 100;
-    }
-
-    return $progress;
+    return 0;
 }
 
 function sql_date_value($date)
@@ -233,9 +219,9 @@ function add_task($projectName, $title, $description, $assigneeId, $status, $pri
 
     $sql = "
         INSERT INTO tasks
-            (project_name, title, description, assignee_id, status, priority, deadline, progress_percent, note)
+            (project_name, title, description, assignee_id, status, priority, deadline, note)
         VALUES
-            ('{$projectName}', '{$title}', '{$description}', {$assigneeSql}, '{$status}', '{$priority}', {$deadlineSql}, {$progress}, '{$note}')
+            ('{$projectName}', '{$title}', '{$description}', {$assigneeSql}, '{$status}', '{$priority}', {$deadlineSql}, '{$note}')
     ";
 
     return mysqli_query($conn, $sql);
@@ -270,7 +256,6 @@ function edit_task($taskId, $projectName, $title, $description, $assigneeId, $st
             status = '{$status}',
             priority = '{$priority}',
             deadline = {$deadlineSql},
-            progress_percent = {$progress},
             note = '{$note}'
         WHERE id = {$taskId}
     ";
@@ -321,8 +306,7 @@ function get_task_stats()
             COUNT(*) AS total_task,
             SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) AS done_task,
             SUM(CASE WHEN status <> 'done' THEN 1 ELSE 0 END) AS working_task,
-            SUM(CASE WHEN deadline < CURDATE() AND status <> 'done' THEN 1 ELSE 0 END) AS overdue_task,
-            ROUND(AVG(progress_percent)) AS avg_progress
+            SUM(CASE WHEN deadline < CURDATE() AND status <> 'done' THEN 1 ELSE 0 END) AS overdue_task
         FROM tasks
     ";
     $query = mysqli_query($conn, $sql);
@@ -348,7 +332,6 @@ function get_project_summaries()
             project_name,
             COUNT(*) AS total_task,
             SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) AS done_task,
-            ROUND(AVG(progress_percent)) AS avg_progress,
             MIN(deadline) AS first_deadline,
             MAX(deadline) AS last_deadline
         FROM tasks

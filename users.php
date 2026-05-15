@@ -57,6 +57,9 @@ require_once __DIR__ . '/partials/header.php';
                             >
                                 Sửa
                             </button>
+                            <a class="btn btn-outline-danger btn-sm" href="actions/user_delete.php?id=<?php echo (int) $item['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này? Thao tác này không thể hoàn tác.')">
+                                Xóa
+                            </a>
                         </td>
                     </tr>
                 <?php } ?>

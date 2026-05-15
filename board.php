@@ -134,11 +134,7 @@ require_once __DIR__ . '/partials/header.php';
                                 <span><i class="bi bi-calendar-event"></i> <?php echo e(format_date_vn($task['deadline'])); ?></span>
                             </div>
 
-                            <div class="progress mt-3" role="progressbar" aria-valuenow="<?php echo (int) $task['progress_percent']; ?>" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar <?php echo e(progress_bar_class($task['progress_percent'])); ?>" style="width: <?php echo (int) $task['progress_percent']; ?>%">
-                                    <?php echo (int) $task['progress_percent']; ?>%
-                                </div>
-                            </div>
+
 
                             <?php if (!empty($task['note'])) { ?>
                                 <div class="task-note mt-3">
@@ -225,7 +221,7 @@ require_once __DIR__ . '/partials/header.php';
                     <input type="hidden" name="board_id" id="task_board_id" value="<?php echo (int) $boardId; ?>">
 
                     <div class="alert alert-info d-none" id="memberEditNotice">
-                        Thành viên chỉ cập nhật được trạng thái, phần trăm tiến độ và ghi chú của task đã được giao cho mình.
+                        Thành viên chỉ cập nhật được trạng thái và ghi chú của task đã được giao cho mình.
                     </div>
 
                     <div class="row g-3">
@@ -266,10 +262,7 @@ require_once __DIR__ . '/partials/header.php';
                             <label class="form-label">Deadline</label>
                             <input type="date" class="form-control manager-only-field" name="deadline" id="task_deadline">
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Tiến độ (%)</label>
-                            <input type="number" class="form-control" min="0" max="100" name="progress_percent" id="task_progress_percent" value="0">
-                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Ghi chú cập nhật</label>
                             <textarea class="form-control" name="note" id="task_note" rows="3"></textarea>

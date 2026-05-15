@@ -84,7 +84,7 @@ function initTaskModal() {
             document.getElementById('task_status_id').value = button.getAttribute('data-task-status') || '';
             document.getElementById('task_priority').value = button.getAttribute('data-task-priority') || 'Trung bình';
             document.getElementById('task_deadline').value = button.getAttribute('data-task-deadline') || '';
-            document.getElementById('task_progress_percent').value = button.getAttribute('data-task-progress') || 0;
+
             document.getElementById('task_note').value = button.getAttribute('data-task-note') || '';
 
             if (!canManage) {
@@ -94,7 +94,7 @@ function initTaskModal() {
         } else {
             title.textContent = 'Tạo task mới';
             document.getElementById('task_id').value = '';
-            document.getElementById('task_progress_percent').value = 0;
+
         }
     });
 }

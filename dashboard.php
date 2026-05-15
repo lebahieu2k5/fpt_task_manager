@@ -56,15 +56,7 @@ require_once __DIR__ . '/partials/header.php';
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <span class="stat-icon bg-info-subtle text-info"><i class="bi bi-graph-up-arrow"></i></span>
-            <div>
-                <small>Tỉ lệ hoàn thành</small>
-                <h3><?php echo e($completionRate); ?>%</h3>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <div class="row g-4">
@@ -92,7 +84,6 @@ require_once __DIR__ . '/partials/header.php';
                                     <h4><?php echo e($board['name']); ?></h4>
                                     <p><?php echo e($board['description']); ?></p>
                                 </div>
-                                <span class="badge text-bg-light"><?php echo e($progress); ?>%</span>
                             </div>
                             <div class="board-meta">
                                 <span><i class="bi bi-people"></i> <?php echo e((int) $board['member_count']); ?> thành viên</span>
@@ -190,7 +181,6 @@ require_once __DIR__ . '/partials/header.php';
                             <th>Board</th>
                             <th>Người thực hiện</th>
                             <th>Deadline</th>
-                            <th>Tiến độ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -203,19 +193,12 @@ require_once __DIR__ . '/partials/header.php';
                                 <td><?php echo e($task['board_name']); ?></td>
                                 <td><?php echo e($task['assignee_name'] ?: 'Chưa giao'); ?></td>
                                 <td class="text-danger fw-semibold"><?php echo e(format_date_vn($task['deadline'])); ?></td>
-                                <td style="min-width: 180px;">
-                                    <div class="progress" role="progressbar" aria-valuenow="<?php echo (int) $task['progress_percent']; ?>" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar <?php echo e(progress_bar_class($task['progress_percent'])); ?>" style="width: <?php echo (int) $task['progress_percent']; ?>%">
-                                            <?php echo (int) $task['progress_percent']; ?>%
-                                        </div>
-                                    </div>
-                                </td>
                             </tr>
                         <?php } ?>
 
                         <?php if (empty($overdueTasks)) { ?>
                             <tr>
-                                <td colspan="5" class="text-center text-secondary py-4">Không có task nào đang trễ hạn.</td>
+                                <td colspan="4" class="text-center text-secondary py-4">Không có task nào đang trễ hạn.</td>
                             </tr>
                         <?php } ?>
                     </tbody>

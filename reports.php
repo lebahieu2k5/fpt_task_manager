@@ -78,9 +78,6 @@ require_once __DIR__ . '/partials/header.php';
                             <strong><?php echo e($row['status_name']); ?></strong>
                             <span><?php echo e((int) $row['task_count']); ?></span>
                         </div>
-                        <div class="progress" role="progressbar" aria-valuenow="<?php echo e($percent); ?>" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar <?php echo e(progress_bar_class($percent)); ?>" style="width: <?php echo e($percent); ?>%"></div>
-                        </div>
                     </div>
                 <?php } ?>
             </div>
@@ -102,7 +99,6 @@ require_once __DIR__ . '/partials/header.php';
                             <th>Bảng</th>
                             <th>Thành viên</th>
                             <th>Task</th>
-                            <th>Tiến độ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,18 +113,11 @@ require_once __DIR__ . '/partials/header.php';
                                 <td><strong><?php echo e($board['name']); ?></strong></td>
                                 <td><?php echo e((int) $board['member_count']); ?></td>
                                 <td><?php echo e((int) $board['task_count']); ?></td>
-                                <td style="min-width: 180px;">
-                                    <div class="progress" role="progressbar" aria-valuenow="<?php echo e($progress); ?>" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar bg-success" style="width: <?php echo e($progress); ?>%">
-                                            <?php echo e($progress); ?>%
-                                        </div>
-                                    </div>
-                                </td>
                             </tr>
                         <?php } ?>
                         <?php if (empty($boards)) { ?>
                             <tr>
-                                <td colspan="4" class="text-center text-secondary py-4">Chưa có dữ liệu.</td>
+                                <td colspan="3" class="text-center text-secondary py-4">Chưa có dữ liệu.</td>
                             </tr>
                         <?php } ?>
                     </tbody>
@@ -143,6 +132,14 @@ require_once __DIR__ . '/partials/header.php';
         <div>
             <h3 class="section-title">Báo cáo theo nhân sự</h3>
         </div>
+        <div class="d-flex gap-2">
+            <a href="actions/export_csv.php" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-filetype-csv"></i> Xuất CSV
+            </a>
+            <a href="actions/export_word.php" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-file-earmark-word"></i> Xuất Word
+            </a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -153,7 +150,6 @@ require_once __DIR__ . '/partials/header.php';
                     <th>Task</th>
                     <th>Đã xong</th>
                     <th>Trễ hạn</th>
-                    <th>Tiến độ TB</th>
                 </tr>
             </thead>
             <tbody>
@@ -163,12 +159,11 @@ require_once __DIR__ . '/partials/header.php';
                         <td><?php echo e((int) $row['task_count']); ?></td>
                         <td><?php echo e((int) $row['done_count']); ?></td>
                         <td><?php echo e((int) $row['overdue_count']); ?></td>
-                        <td><?php echo e((int) $row['avg_progress']); ?>%</td>
                     </tr>
                 <?php } ?>
                 <?php if (empty($assigneeReport)) { ?>
                     <tr>
-                        <td colspan="5" class="text-center text-secondary py-4">Chưa có dữ liệu.</td>
+                        <td colspan="4" class="text-center text-secondary py-4">Chưa có dữ liệu.</td>
                     </tr>
                 <?php } ?>
             </tbody>

@@ -1,6 +1,6 @@
 <?php
-require 'tasks.php';
-require 'layout.php';
+require '../tasks.php';
+require '../layout.php';
 
 $filters = array(
     'keyword' => isset($_GET['keyword']) ? $_GET['keyword'] : '',
@@ -17,13 +17,13 @@ render_header('Danh sách task', 'tasks');
 <section class="page-title-row">
     <div>
         <p class="eyebrow">CRUD task</p>
-        <h1>Danh sách công việc</h1>
+        <h1>Danh sách công việc (Legacy)</h1>
     </div>
-    <a class="button" href="task-add.php">Thêm task</a>
+    <a class="button" href="add.php">Thêm task</a>
 </section>
 
 <section class="panel">
-    <form method="get" action="task-list.php" class="filter-form">
+    <form method="get" action="list.php" class="filter-form">
         <div>
             <label>Từ khóa</label>
             <input type="text" name="keyword" value="<?php echo escape($filters['keyword']); ?>" placeholder="Tìm task hoặc dự án">
@@ -52,7 +52,7 @@ render_header('Danh sách task', 'tasks');
         </div>
         <div class="filter-actions">
             <button class="button" type="submit">Lọc</button>
-            <a class="button secondary" href="task-list.php">Bỏ lọc</a>
+            <a class="button secondary" href="list.php">Bỏ lọc</a>
         </div>
     </form>
 </section>
@@ -68,7 +68,6 @@ render_header('Danh sách task', 'tasks');
                     <th>Người làm</th>
                     <th>Trạng thái</th>
                     <th>Deadline</th>
-                    <th>Tiến độ</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -90,22 +89,16 @@ render_header('Danh sách task', 'tasks');
                         <td class="<?php echo task_is_overdue($task) ? 'text-danger' : ''; ?>">
                             <?php echo escape(format_date_vn($task['deadline'])); ?>
                         </td>
-                        <td>
-                            <div class="progress with-label">
-                                <span class="<?php echo progress_class($task['progress_percent']); ?>" style="width: <?php echo (int) $task['progress_percent']; ?>%"></span>
-                                <em><?php echo (int) $task['progress_percent']; ?>%</em>
-                            </div>
-                        </td>
                         <td class="table-actions">
-                            <a href="task-edit.php?id=<?php echo (int) $task['id']; ?>">Sửa</a>
-                            <a class="danger-link" href="task-delete.php?id=<?php echo (int) $task['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa task này không?');">Xóa</a>
+                            <a href="edit.php?id=<?php echo (int) $task['id']; ?>">Sửa</a>
+                            <a class="danger-link" href="../actions/task_legacy_action.php?action=delete&id=<?php echo (int) $task['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa task này không?');">Xóa</a>
                         </td>
                     </tr>
                 <?php } ?>
 
                 <?php if (empty($tasks)) { ?>
                     <tr>
-                        <td colspan="8" class="empty-cell">Không tìm thấy task phù hợp.</td>
+                        <td colspan="7" class="empty-cell">Không tìm thấy task phù hợp.</td>
                     </tr>
                 <?php } ?>
             </tbody>

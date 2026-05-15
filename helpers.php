@@ -7,7 +7,7 @@ function e($value)
 
 function redirect($url)
 {
-    header('Lọcation: ' . $url);
+    header('Location: ' . $url);
     exit;
 }
 

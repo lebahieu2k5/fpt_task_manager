@@ -8,6 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 function clamp_progress_value($value)
 {
+    
     $value = (int) $value;
 
     if ($value < 0) {
@@ -51,10 +52,15 @@ if (!in_array($selectedStatusId, $validStatusIds, true)) {
 }
 
 $selectedStatus = resolve_status_by_id($selectedStatusId, $statuses);
-$progressPercent = clamp_progress_value(isset($_POST['progress_percent']) ? $_POST['progress_percent'] : 0);
 
-if ($selectedStatus && $selectedStatus['status_key'] === 'done') {
-    $progressPercent = 100;
+// Deadline validation (Requirement: deadline >= today)
+$deadline = !empty($_POST['deadline']) ? $_POST['deadline'] : null;
+if ($deadline) {
+    $today = date('Y-m-d');
+    if ($deadline < $today) {
+        set_flash('danger', 'Hạn chót không được nhỏ hơn ngày hiện tại.');
+        redirect('../board.php?id=' . $boardId);
+    }
 }
 
 if ($taskId > 0) {
@@ -97,7 +103,6 @@ if ($taskId > 0) {
                 status_id = :status_id,
                 priority = :priority,
                 deadline = :deadline,
-                progress_percent = :progress_percent,
                 note = :note
             WHERE id = :id'
         );
@@ -110,7 +115,6 @@ if ($taskId > 0) {
                 'status_id' => $selectedStatusId,
                 'priority' => $priority,
                 'deadline' => $deadline,
-                'progress_percent' => $progressPercent,
                 'note' => $note,
                 'id' => $taskId,
             )
@@ -121,7 +125,6 @@ if ($taskId > 0) {
         $statement = $pdo->prepare(
             'UPDATE tasks
             SET status_id = :status_id,
-                progress_percent = :progress_percent,
                 note = :note
             WHERE id = :id'
         );
@@ -129,7 +132,6 @@ if ($taskId > 0) {
         $statement->execute(
             array(
                 'status_id' => $selectedStatusId,
-                'progress_percent' => $progressPercent,
                 'note' => $note,
                 'id' => $taskId,
             )
@@ -174,9 +176,9 @@ $positionOrder = (int) $positionStatement->fetchColumn();
 
 $statement = $pdo->prepare(
     'INSERT INTO tasks
-    (board_id, status_id, title, description, priority, assignee_id, deadline, progress_percent, note, position_order, created_by)
+    (board_id, status_id, title, description, priority, assignee_id, deadline, note, position_order, created_by)
     VALUES
-    (:board_id, :status_id, :title, :description, :priority, :assignee_id, :deadline, :progress_percent, :note, :position_order, :created_by)'
+    (:board_id, :status_id, :title, :description, :priority, :assignee_id, :deadline, :note, :position_order, :created_by)'
 );
 
 $statement->execute(
@@ -188,7 +190,6 @@ $statement->execute(
         'priority' => $priority,
         'assignee_id' => $assigneeId,
         'deadline' => $deadline,
-        'progress_percent' => $progressPercent,
         'note' => $note,
         'position_order' => $positionOrder,
         'created_by' => current_user_id(),
