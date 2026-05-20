@@ -14,6 +14,7 @@ Project được rút gọn từ:
 ## 2. Chức năng đã làm
 
 - Đăng nhập bằng tài khoản Admin, Quản lý và Nhân viên
+- Quên mật khẩu bằng username, email và mã xác nhận
 - Admin phân quyền, cập nhật tài khoản, xem báo cáo/thống kê và cập nhật thông báo
 - Quản lý cập nhật board, task, nhân sự trong board, giám sát và xem báo cáo
 - Nhân viên nhận việc, cập nhật trạng thái và tiến độ công việc
@@ -23,6 +24,7 @@ Project được rút gọn từ:
 - Cập nhật tài khoản cá nhân
 - Quản lý thông báo nội bộ
 - Báo cáo/thống kê tiến độ theo trạng thái, board và nhân sự
+- Xuất báo cáo tổng hợp ra Excel, Word và PDF
 - Tạo link đồng bộ deadline task sang Google Calendar
 - Hiển thị task theo 4 cột trạng thái:
   - Chưa bắt đầu
@@ -43,17 +45,21 @@ Project được rút gọn từ:
 - `users.php`: Admin quản lý tài khoản và phân quyền
 - `notifications.php`: quản lý thông báo
 - `reports.php`: tổng hợp báo cáo và thống kê
+- `actions/export_excel.php`, `actions/export_word.php`, `actions/export_pdf.php`: xuất báo cáo
 - `calendar.php`: lịch deadline và link Google Calendar
+- `forgot_password.php`, `reset_password.php`: quên mật khẩu và đặt lại mật khẩu
 - `database.sql`: file import MySQL
+- `database_update_forgot_password.sql`: file cập nhật thêm bảng reset mật khẩu nếu database đã import trước đó
 
 ## 4. Cách chạy bằng XAMPP
 
 1. Đặt thư mục `fpt_task_manager` vào `htdocs` của XAMPP.
 2. Mở `phpMyAdmin`.
 3. Import file `database.sql`.
-4. Sửa file `config/database.php` nếu máy bạn khác `DB_USER`, `DB_PASS`, `DB_NAME`.
-5. Bật `Apache` và `MySQL`.
-6. Truy cập:
+4. Nếu database đã có từ trước, import thêm `database_update_forgot_password.sql`.
+5. Sửa file `config/database.php` nếu máy bạn khác `DB_USER`, `DB_PASS`, `DB_NAME`.
+6. Bật `Apache` và `MySQL`.
+7. Truy cập:
 
 ```text
 http://localhost/fpt_task_manager/login.php

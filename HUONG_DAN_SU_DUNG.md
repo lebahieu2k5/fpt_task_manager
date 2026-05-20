@@ -21,8 +21,9 @@ Hệ thống có 3 vai trò:
 5. Bật `MySQL`.
 6. Mở trình duyệt và truy cập `http://localhost/phpmyadmin`.
 7. Tạo hoặc import database từ file `database.sql`.
-8. Kiểm tra file `config/database.php`.
-9. Nếu dùng XAMPP mặc định thì giữ nguyên:
+8. Nếu database đã được import trước khi thêm chức năng quên mật khẩu, import thêm file `database_update_forgot_password.sql`.
+9. Kiểm tra file `config/database.php`.
+10. Nếu dùng XAMPP mặc định thì giữ nguyên:
 
 ```php
 define('DB_HOST', 'localhost');
@@ -31,7 +32,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 ```
 
-10. Mở website tại:
+11. Mở website tại:
 
 ```text
 http://localhost/fpt_task_manager/login.php
@@ -82,6 +83,18 @@ Password: 123456
 4. Sau khi đăng nhập thành công, hệ thống chuyển vào trang Dashboard.
 
 Nếu nhập thiếu thông tin, hệ thống báo cần nhập đầy đủ tên đăng nhập và mật khẩu. Nếu nhập sai tài khoản, hệ thống báo thông tin đăng nhập không đúng.
+
+### 4.1. Quên mật khẩu
+
+1. Tại màn hình đăng nhập, bấm `Quên mật khẩu?`.
+2. Nhập username và email đúng với tài khoản.
+3. Bấm `Tạo mã xác nhận`.
+4. Hệ thống chuyển sang màn hình đặt lại mật khẩu và hiển thị mã xác nhận demo.
+5. Nhập mã xác nhận, mật khẩu mới và xác nhận mật khẩu.
+6. Bấm `Đặt lại mật khẩu`.
+7. Đăng nhập lại bằng mật khẩu mới.
+
+Lưu ý: mã xác nhận hết hạn sau 15 phút. Trên XAMPP chưa cấu hình SMTP, mã được hiển thị trực tiếp để thuận tiện demo.
 
 ## 5. Thanh điều hướng
 
@@ -211,8 +224,15 @@ Admin vào menu `Báo cáo` để xem:
 - Thống kê task theo trạng thái.
 - Tiến độ theo bảng.
 - Báo cáo theo nhân sự.
+- Nút xuất báo cáo ra Excel, Word và PDF.
 
 Admin dùng trang này để tổng hợp tình hình chung, kiểm tra board nào chậm tiến độ và nhân sự nào có nhiều task trễ hạn.
+
+Cách xuất báo cáo:
+
+1. Vào menu `Báo cáo`.
+2. Bấm `Excel`, `Word` hoặc `PDF` trong khung xuất báo cáo.
+3. Trình duyệt tải file báo cáo tổng hợp về máy.
 
 ## 8. Chức năng Quản lý
 
@@ -462,6 +482,7 @@ Không đăng nhập được:
 - Kiểm tra username và password.
 - Dùng tài khoản demo trong phần trên.
 - Kiểm tra bảng `users` trong database đã có dữ liệu mẫu chưa.
+- Nếu quên mật khẩu báo thiếu database, import thêm `database_update_forgot_password.sql`.
 
 Không thấy menu cần dùng:
 
@@ -493,4 +514,3 @@ File `database.sql` đã có sẵn dữ liệu mẫu gồm:
 - 6 task mẫu.
 
 Khi cần làm lại dữ liệu từ đầu, có thể import lại file `database.sql` trong phpMyAdmin. Việc import lại sẽ xóa dữ liệu cũ theo các lệnh `DROP TABLE IF EXISTS`, vì vậy chỉ làm khi muốn reset database.
-

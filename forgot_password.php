@@ -5,41 +5,14 @@ if (is_logged_in()) {
     redirect('dashboard.php');
 }
 
-$error = '';
 $flash = pull_flash();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim(isset($_POST['username']) ? $_POST['username'] : '');
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-
-    if ($username === '' || $password === '') {
-        $error = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.';
-    } else {
-        $user = find_user_by_username($username);
-
-        if ($user && password_verify($password, $user['password_hash'])) {
-            $_SESSION['user'] = array(
-                'id' => $user['id'],
-                'full_name' => $user['full_name'],
-                'username' => $user['username'],
-                'role' => $user['role'],
-                'department' => $user['department'],
-            );
-
-            set_flash('success', 'Đăng nhập thành công. Chào mừng bạn đến với hệ thống!');
-            redirect('dashboard.php');
-        }
-
-        $error = 'Thông tin đăng nhập không đúng.';
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - FPT Workflow</title>
+    <title>Quên mật khẩu - FPT Workflow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -56,10 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php } ?>
 
-                <?php if ($error !== '') { ?>
-                    <div class="alert alert-danger"><?php echo e($error); ?></div>
-                <?php } ?>
-
                 <div class="text-center mb-4 vstack gap-2">
                     <span class="brand-mark mx-auto" style="width: 64px; height: 64px; border-radius: 16px; padding: 8px;">
                         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -70,24 +39,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </g>
                         </svg>
                     </span>
-                    <h1 class="h3 fw-bold mt-2">FPT Workflow</h1>
-                    <p class="text-secondary small">Hệ thống quản lý công việc nội bộ</p>
+                    <h1 class="h3 fw-bold mt-2">Quên mật khẩu</h1>
+                    <p class="text-secondary small">Nhập đúng username và email tài khoản để nhận mã xác nhận.</p>
                 </div>
 
-                <form method="post" action="login.php" class="vstack gap-3">
+                <form method="post" action="actions/password_reset_request.php" class="vstack gap-3">
                     <div>
                         <label class="form-label">Tên đăng nhập</label>
                         <input class="form-control form-control-lg" type="text" name="username" placeholder="Nhập username..." required>
                     </div>
                     <div>
-                        <label class="form-label">Mật khẩu</label>
-                        <input class="form-control form-control-lg" type="password" name="password" placeholder="Nhập mật khẩu..." required>
+                        <label class="form-label">Email</label>
+                        <input class="form-control form-control-lg" type="email" name="email" placeholder="Nhập email tài khoản..." required>
                     </div>
-                    <div class="text-end">
-                        <a class="text-decoration-none small" href="forgot_password.php">Quên mật khẩu?</a>
-                    </div>
-                    <button class="btn btn-brand btn-lg w-100" type="submit">Đăng nhập</button>
+                    <button class="btn btn-brand btn-lg w-100" type="submit">Tạo mã xác nhận</button>
                 </form>
+
+                <div class="text-center mt-4">
+                    <a class="text-decoration-none" href="login.php">Quay lại đăng nhập</a>
+                </div>
             </div>
         </section>
     </div>

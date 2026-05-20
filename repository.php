@@ -79,6 +79,104 @@ function username_exists($username, $ignoreUserId = 0)
     return (int) $statement->fetchColumn() > 0;
 }
 
+function find_user_for_password_reset($username, $email)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'SELECT *
+        FROM users
+        WHERE username = :username AND email = :email
+        LIMIT 1'
+    );
+    $statement->execute(
+        array(
+            'username' => $username,
+            'email' => $email,
+        )
+    );
+
+    return $statement->fetch();
+}
+
+function create_password_reset_code($userId, $code, $expiresAt)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'UPDATE password_resets
+        SET used_at = NOW()
+        WHERE user_id = :user_id AND used_at IS NULL'
+    );
+    $statement->execute(array('user_id' => (int) $userId));
+
+    $statement = $pdo->prepare(
+        'INSERT INTO password_resets (user_id, reset_code_hash, expires_at)
+        VALUES (:user_id, :reset_code_hash, :expires_at)'
+    );
+    $statement->execute(
+        array(
+            'user_id' => (int) $userId,
+            'reset_code_hash' => password_hash($code, PASSWORD_DEFAULT),
+            'expires_at' => $expiresAt,
+        )
+    );
+}
+
+function find_valid_password_reset($userId, $code)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'SELECT *
+        FROM password_resets
+        WHERE user_id = :user_id
+            AND used_at IS NULL
+            AND expires_at >= NOW()
+        ORDER BY created_at DESC, id DESC
+        LIMIT 5'
+    );
+    $statement->execute(array('user_id' => (int) $userId));
+    $resets = $statement->fetchAll();
+
+    foreach ($resets as $reset) {
+        if (password_verify($code, $reset['reset_code_hash'])) {
+            return $reset;
+        }
+    }
+
+    return false;
+}
+
+function update_user_password($userId, $password)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'UPDATE users
+        SET password_hash = :password_hash
+        WHERE id = :id'
+    );
+    $statement->execute(
+        array(
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'id' => (int) $userId,
+        )
+    );
+}
+
+function mark_password_reset_used($resetId)
+{
+    global $pdo;
+
+    $statement = $pdo->prepare(
+        'UPDATE password_resets
+        SET used_at = NOW()
+        WHERE id = :id'
+    );
+    $statement->execute(array('id' => (int) $resetId));
+}
+
 function update_user_profile($userId, $fullName, $email, $department, $password)
 {
     global $pdo;

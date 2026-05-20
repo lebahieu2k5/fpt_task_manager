@@ -17,6 +17,28 @@ if (!empty($stats['task_count'])) {
 
 require_once __DIR__ . '/partials/header.php';
 ?>
+<div class="content-card mb-4">
+    <div class="section-header mb-0">
+        <div>
+            <h3 class="section-title">Xuất báo cáo</h3>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="actions/export_excel.php" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-file-earmark-excel"></i>
+                Excel
+            </a>
+            <a href="actions/export_word.php" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-file-earmark-word"></i>
+                Word
+            </a>
+            <a href="actions/export_pdf.php" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i>
+                PDF
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4 mb-4">
     <div class="col-md-6 col-xl-3">
         <div class="stat-card">
@@ -131,14 +153,6 @@ require_once __DIR__ . '/partials/header.php';
     <div class="section-header">
         <div>
             <h3 class="section-title">Báo cáo theo nhân sự</h3>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="actions/export_csv.php" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-filetype-csv"></i> Xuất CSV
-            </a>
-            <a href="actions/export_word.php" class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-file-earmark-word"></i> Xuất Word
-            </a>
         </div>
     </div>
 
