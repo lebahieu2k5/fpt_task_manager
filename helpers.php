@@ -46,6 +46,52 @@ function pull_flash()
     return $flash;
 }
 
+function csrf_token()
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_input()
+{
+    return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}
+
+function verify_csrf_token($token)
+{
+    return is_string($token)
+        && !empty($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+function password_validation_error($password)
+{
+    if (strlen($password) < 6) {
+        return 'Mật khẩu phải có tối thiểu 6 ký tự.';
+    }
+
+    if (!preg_match('/[A-Z]/', $password)) {
+        return 'Mật khẩu phải có ít nhất 1 chữ cái viết hoa.';
+    }
+
+    if (!preg_match('/[a-zA-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+        return 'Mật khẩu phải có cả chữ và số.';
+    }
+
+    if (preg_match('/\s/', $password)) {
+        return 'Mật khẩu không được chứa khoảng trắng.';
+    }
+
+    if (!preg_match('/[^a-zA-Z0-9\s]/', $password)) {
+        return 'Mật khẩu phải có ít nhất 1 ký tự đặc biệt.';
+    }
+
+    return '';
+}
+
 function current_user()
 {
     return isset($_SESSION['user']) ? $_SESSION['user'] : null;

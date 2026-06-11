@@ -20,21 +20,63 @@ function find_user_by_id($id)
     return $statement->fetch();
 }
 
-function fetch_all_users()
+function fetch_all_users($filters = array())
 {
     global $pdo;
 
-    $statement = $pdo->query(
-        "SELECT id, full_name, email, username, role, department, created_at
-        FROM users
-        ORDER BY
-            CASE role
-                WHEN 'admin' THEN 0
-                WHEN 'manager' THEN 1
-                ELSE 2
-            END,
-            full_name ASC"
+    $where = array();
+    $params = array();
+    $textFilters = array(
+        'full_name' => 'full_name',
+        'username' => 'username',
+        'email' => 'email',
+        'department' => 'department',
     );
+
+    foreach ($textFilters as $filterKey => $column) {
+        $value = isset($filters[$filterKey]) ? trim((string) $filters[$filterKey]) : '';
+
+        if ($value !== '') {
+            $where[] = $column . ' LIKE :' . $filterKey;
+            $params[$filterKey] = '%' . $value . '%';
+        }
+    }
+
+    $role = isset($filters['role']) ? trim((string) $filters['role']) : '';
+    if (in_array($role, array('admin', 'manager', 'member'), true)) {
+        $where[] = 'role = :role';
+        $params['role'] = $role;
+    }
+
+    $createdFrom = isset($filters['created_from']) ? trim((string) $filters['created_from']) : '';
+    if ($createdFrom !== '') {
+        $where[] = 'created_at >= :created_from';
+        $params['created_from'] = $createdFrom . ' 00:00:00';
+    }
+
+    $createdTo = isset($filters['created_to']) ? trim((string) $filters['created_to']) : '';
+    if ($createdTo !== '') {
+        $where[] = 'created_at <= :created_to';
+        $params['created_to'] = $createdTo . ' 23:59:59';
+    }
+
+    $sql = "SELECT id, full_name, email, username, role, department, created_at
+        FROM users";
+
+    if (!empty($where)) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+
+    $sql .= " ORDER BY
+        CASE role
+            WHEN 'admin' THEN 0
+            WHEN 'manager' THEN 1
+            ELSE 2
+        END,
+        full_name ASC";
+
+    $statement = $pdo->prepare($sql);
+    $statement->execute($params);
 
     return $statement->fetchAll();
 }

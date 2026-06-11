@@ -25,6 +25,7 @@ Project được rút gọn từ:
 - Quản lý thông báo nội bộ
 - Báo cáo/thống kê tiến độ theo trạng thái, board và nhân sự
 - Xuất báo cáo tổng hợp ra Excel, Word và PDF
+- Admin sao lưu toàn bộ database ra file SQL và import/khôi phục dữ liệu
 - Tạo link đồng bộ deadline task sang Google Calendar
 - Hiển thị task theo 4 cột trạng thái:
   - Chưa bắt đầu
@@ -46,6 +47,8 @@ Project được rút gọn từ:
 - `notifications.php`: quản lý thông báo
 - `reports.php`: tổng hợp báo cáo và thống kê
 - `actions/export_excel.php`, `actions/export_word.php`, `actions/export_pdf.php`: xuất báo cáo
+- `data_management.php`: Admin sao lưu và khôi phục database
+- `actions/database_backup.php`, `actions/database_import.php`: tải backup SQL và xử lý import
 - `calendar.php`: lịch deadline và link Google Calendar
 - `forgot_password.php`, `reset_password.php`: quên mật khẩu và đặt lại mật khẩu
 - `database.sql`: file import MySQL

@@ -31,8 +31,10 @@ if (!preg_match('/^[0-9]{6}$/', $resetCode)) {
     redirect($resetUrl);
 }
 
-if (strlen($password) < 6) {
-    set_flash('danger', 'Mật khẩu mới cần tối thiểu 6 ký tự.');
+$passwordError = password_validation_error($password);
+
+if ($passwordError !== '') {
+    set_flash('danger', $passwordError);
     redirect($resetUrl);
 }
 

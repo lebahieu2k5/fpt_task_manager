@@ -31,7 +31,9 @@ if (!$user) {
 
 $code = (string) random_int(100000, 999999);
 $expiresAt = date('Y-m-d H:i:s', time() + 15 * 60);
-
+    
+// $expiresAt = date('Y-m-d H:i:s', time() + 15 * 60);
+// e(format_datetime_vn($resetDemo['expires_at'], 'Y-m-d'))
 try {
     create_password_reset_code($user['id'], $code, $expiresAt);
 } catch (PDOException $exception) {

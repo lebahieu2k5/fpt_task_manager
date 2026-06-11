@@ -3,7 +3,29 @@ $pageTitle = isset($pageTitle) ? $pageTitle : 'FPT Task Manager';
 $activePage = isset($activePage) ? $activePage : '';
 $flash = pull_flash();
 $user = current_user();
-$userInitial = $user ? strtoupper(substr($user['full_name'], 0, 1)) : 'U';
+
+if ($user) {
+    $freshUser = find_user_by_id($user['id']);
+
+    if ($freshUser) {
+        $_SESSION['user'] = array(
+            'id' => $freshUser['id'],
+            'full_name' => $freshUser['full_name'],
+            'username' => $freshUser['username'],
+            'role' => $freshUser['role'],
+            'department' => $freshUser['department'],
+        );
+        $user = $_SESSION['user'];
+    }
+}
+
+$userInitial = 'U';
+
+if ($user) {
+    $userInitial = function_exists('mb_substr')
+        ? mb_strtoupper(mb_substr($user['full_name'], 0, 1, 'UTF-8'), 'UTF-8')
+        : strtoupper(substr($user['full_name'], 0, 1));
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -52,6 +74,10 @@ $userInitial = $user ? strtoupper(substr($user['full_name'], 0, 1)) : 'U';
                         <a class="nav-link-custom <?php echo $activePage === 'users' ? 'active' : ''; ?>" href="users.php">
                             <i class="bi bi-people"></i>
                             <span>Phân quyền</span>
+                        </a>
+                        <a class="nav-link-custom <?php echo $activePage === 'data-management' ? 'active' : ''; ?>" href="data_management.php">
+                            <i class="bi bi-database-gear"></i>
+                            <span>Sao lưu dữ liệu</span>
                         </a>
                     <?php } ?>
                  

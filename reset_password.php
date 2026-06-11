@@ -36,11 +36,16 @@ if (!empty($resetDemo) && strtotime($resetDemo['expires_at']) < time()) {
                         <?php echo e($flash['message']); ?>
                     </div>
                 <?php } ?>
-
+                <!-- e(format_datetime_vn($resetDemo['expires_at'], 'Y-m-d')) -->
+                 <?php $currentDate = new DateTime(); // Tự động lấy mốc hiện tại ?>
                 <?php if (!empty($resetDemo)) { ?>
                     <div class="alert alert-info">
                         Mã xác nhận demo: <strong><?php echo e($resetDemo['code']); ?></strong>
                         <div class="small mt-1">Hết hạn lúc <?php echo e(format_datetime_vn($resetDemo['expires_at'])); ?></div>
+                        
+                        <!-- <div> <?= $currentDate->format('d/m/Y H:i:s') ?> </div> -->
+                        <!-- <div class="small mt-1">Hết hạn lúc <?php echo e(date('m/d/Y H:i', strtotime($resetDemo['expires_at']))); ?></div>
+                     -->
                     </div>
                 <?php } ?>
 
@@ -58,7 +63,7 @@ if (!empty($resetDemo) && strtotime($resetDemo['expires_at']) < time()) {
                     <p class="text-secondary small">Mã xác nhận có hiệu lực trong 15 phút.</p>
                 </div>
 
-                <form method="post" action="actions/password_reset_save.php" class="vstack gap-3">
+                <form method="post" action="actions/password_reset_save.php" class="vstack gap-3" id="resetPasswordForm">
                     <div>
                         <label class="form-label">Tên đăng nhập</label>
                         <input class="form-control form-control-lg" type="text" name="username" value="<?php echo e($username); ?>" placeholder="Nhập username..." required>
@@ -73,11 +78,13 @@ if (!empty($resetDemo) && strtotime($resetDemo['expires_at']) < time()) {
                     </div>
                     <div>
                         <label class="form-label">Mật khẩu mới</label>
-                        <input class="form-control form-control-lg" type="password" name="password" placeholder="Nhập mật khẩu mới..." autocomplete="new-password" required>
+                        <input class="form-control form-control-lg" type="password" name="password" id="reset_password" placeholder="Nhập mật khẩu mới..." autocomplete="new-password">
+                        <div id="reset_password_error" class="text-danger small mt-1" style="display: none; font-weight: 500;"></div>
                     </div>
                     <div>
                         <label class="form-label">Xác nhận mật khẩu</label>
-                        <input class="form-control form-control-lg" type="password" name="password_confirm" placeholder="Nhập lại mật khẩu mới..." autocomplete="new-password" required>
+                        <input class="form-control form-control-lg" type="password" name="password_confirm" id="reset_password_confirm" placeholder="Nhập lại mật khẩu mới..." autocomplete="new-password">
+                        <div id="reset_password_confirm_error" class="text-danger small mt-1" style="display: none; font-weight: 500;"></div>
                     </div>
                     <button class="btn btn-brand btn-lg w-100" type="submit">Đặt lại mật khẩu</button>
                 </form>
@@ -89,5 +96,6 @@ if (!empty($resetDemo) && strtotime($resetDemo['expires_at']) < time()) {
             </div>
         </section>
     </div>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>

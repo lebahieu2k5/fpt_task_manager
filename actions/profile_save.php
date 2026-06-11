@@ -22,9 +22,13 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirect('../profile.php');
 }
 
-if ($password !== '' && strlen($password) < 6) {
-    set_flash('danger', 'Mật khẩu mới cần tối thiểu 6 ký tự.');
-    redirect('../profile.php');
+if ($password !== '') {
+    $passwordError = password_validation_error($password);
+
+    if ($passwordError !== '') {
+        set_flash('danger', $passwordError);
+        redirect('../profile.php');
+    }
 }
 
 if ($password !== $passwordConfirm) {

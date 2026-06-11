@@ -58,6 +58,7 @@ require_once __DIR__ . '/partials/header.php';
                         <td>
                             <strong><?php echo e($task['title']); ?></strong>
                             <div class="text-secondary small"><?php echo e($task['priority']); ?></div>
+                            
                         </td>
                         <td>
                             <a href="board.php?id=<?php echo (int) $task['board_id']; ?>" class="fw-medium text-primary text-decoration-none">

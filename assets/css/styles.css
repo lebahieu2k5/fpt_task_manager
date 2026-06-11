@@ -18,9 +18,16 @@
 }
 
 body {
-    font-family: 'Be Vietnam Pro', sans-serif;
+    font-family: 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif;
     color: var(--ink-900);
     background: var(--bg);
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
 }
 
 .app-body {
@@ -178,6 +185,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0;
+}
+
+.user-filter-box {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface-soft);
 }
 
 .content-card,
